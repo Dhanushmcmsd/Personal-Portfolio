@@ -7,17 +7,23 @@ import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { exclusiveOpacity, SECTION } from "@/lib/scroll/timeline";
 
+export interface EatTarget {
+  position: THREE.Vector3;
+  progress: number;
+}
+
 interface VirusMascotProps {
   targetPosition: THREE.Vector3 | null;
-  catchPulse: number;
+  eatTarget: EatTarget | null;
   positionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
 const VIRUS_SCALE = 0.009;
+const EAT_DURATION_MS = 2000;
 
 export default function VirusMascot({
   targetPosition,
-  catchPulse,
+  eatTarget,
   positionRef,
 }: VirusMascotProps) {
   const groupRef = useRef<THREE.Group>(null);
@@ -54,7 +60,9 @@ export default function VirusMascot({
     }
 
     groupRef.current.visible = true;
-    const catching = Boolean(targetPosition && contactVis > 0.5);
+    const eating = Boolean(eatTarget);
+    const eatT = eatTarget?.progress ?? 0;
+    const chasing = Boolean(targetPosition && contactVis > 0.5 && !eating);
 
     const orbitX = Math.sin(t * 0.7) * 1.2;
     const orbitY = 0.2 + Math.sin(t * 0.9) * 0.15;
@@ -64,22 +72,31 @@ export default function VirusMascot({
     local.applyQuaternion(camera.quaternion);
     local.add(camera.position);
 
-    if (catching && targetPosition) {
-      currentPos.current.lerp(targetPosition, 0.1);
+    if (eating && eatTarget) {
+      currentPos.current.lerp(eatTarget.position, 0.18);
+      bodyRef.current.rotation.x = Math.sin(eatT * Math.PI * 3) * 0.35;
+      bodyRef.current.rotation.z = Math.sin(eatT * Math.PI * 2) * 0.08;
+      bodyRef.current.rotation.y = t * 0.4;
+      groupRef.current.scale.setScalar(
+        VIRUS_SCALE * contactVis * (1 + Math.sin(eatT * Math.PI * 4) * 0.12)
+      );
+    } else if (chasing && targetPosition) {
+      currentPos.current.lerp(targetPosition, 0.12);
+      bodyRef.current.rotation.x = Math.sin(t * 2) * 0.06;
+      bodyRef.current.rotation.z = Math.sin(t * 1.4) * 0.12;
+      bodyRef.current.rotation.y = t * 1.1;
+      groupRef.current.scale.setScalar(VIRUS_SCALE * contactVis);
     } else {
       currentPos.current.lerp(local, 0.06);
+      bodyRef.current.rotation.y = t * 1.1;
+      bodyRef.current.rotation.z = Math.sin(t * 1.4) * 0.12;
+      bodyRef.current.rotation.x = 0;
+      groupRef.current.scale.setScalar(VIRUS_SCALE * contactVis);
     }
 
     groupRef.current.position.copy(currentPos.current);
     if (positionRef) positionRef.current.copy(currentPos.current);
-
     groupRef.current.quaternion.copy(camera.quaternion);
-    bodyRef.current.rotation.y = t * 1.1;
-    bodyRef.current.rotation.z = Math.sin(t * 1.4) * 0.12;
-
-    groupRef.current.scale.setScalar(
-      VIRUS_SCALE * contactVis * (1 + catchPulse * 0.15)
-    );
   });
 
   return (
@@ -95,3 +112,5 @@ export default function VirusMascot({
 }
 
 useGLTF.preload("/models/dhanush-virus-mascot.glb");
+
+export { EAT_DURATION_MS };

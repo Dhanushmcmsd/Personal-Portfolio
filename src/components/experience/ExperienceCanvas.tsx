@@ -41,6 +41,7 @@ export default function ExperienceCanvas() {
         dpr={[1, dpr]}
         onCreated={({ gl }) => {
           gl.setClearColor("#6eb5e8", 1);
+          gl.localClippingEnabled = true;
         }}
         onError={() => setWebglFailed(true)}
       >

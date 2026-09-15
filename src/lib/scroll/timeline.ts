@@ -189,7 +189,22 @@ export function getCloudCityBlend(progress: number) {
   return smootherstep(TIMELINE.hero, TIMELINE.vigilance + 0.02, progress);
 }
 
-/** 0 = green cyber apartments, 1 = white apartments (last project → experience) */
+/** 0→1 fire sweep progress: last project end → about start */
+export function getCityWhiteFireProgress(progress: number) {
+  return smootherstep(SECTION.python[1] - 0.02, SECTION.about[0], progress);
+}
+
+/** Rising world-Y threshold for bottom-up white fire mask */
+export function getCityWhiteFireMaskY(progress: number) {
+  return -2.5 + getCityWhiteFireProgress(progress) * 17;
+}
+
+/** Legacy blend factor (peaks when fire completes) */
 export function getCityWhiteBlend(progress: number) {
-  return smootherstep(SECTION.python[1] - 0.04, SECTION.experience[0] + 0.04, progress);
+  return getCityWhiteFireProgress(progress);
+}
+
+/** 0→1 black void after hero→city transition */
+export function getCityBlackPhase(progress: number) {
+  return smootherstep(TIMELINE.transition, TIMELINE.vigilance + 0.02, progress);
 }

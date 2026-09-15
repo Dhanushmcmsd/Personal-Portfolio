@@ -4,7 +4,12 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getCityWhiteBlend, getCloudCityBlend } from "@/lib/scroll/timeline";
+import {
+  getCityBlackPhase,
+  getCityWhiteFireMaskY,
+  getCityWhiteFireProgress,
+  getCloudCityBlend,
+} from "@/lib/scroll/timeline";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
@@ -25,6 +30,8 @@ const CYBER_WHITE = {
   grid: new THREE.Color("#d8dce6"),
   fog: new THREE.Color("#ffffff"),
 };
+
+const BLACK_VOID = new THREE.Color("#06080B");
 
 function makeWindowTexture(isWhite: boolean) {
   const canvas = document.createElement("canvas");
@@ -49,6 +56,24 @@ function makeWindowTexture(isWhite: boolean) {
   const tex = new THREE.CanvasTexture(canvas);
   tex.wrapS = THREE.RepeatWrapping;
   tex.wrapT = THREE.RepeatWrapping;
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+function makeFireBandTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 64;
+  const ctx = canvas.getContext("2d")!;
+  const grad = ctx.createLinearGradient(0, 64, 0, 0);
+  grad.addColorStop(0, "rgba(255,255,255,0)");
+  grad.addColorStop(0.25, "rgba(255,220,160,0.85)");
+  grad.addColorStop(0.5, "rgba(255,140,60,0.75)");
+  grad.addColorStop(0.75, "rgba(255,80,20,0.45)");
+  grad.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 256, 64);
+  const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;
 }
@@ -91,15 +116,31 @@ function lerpColor(target: THREE.Color, a: THREE.Color, b: THREE.Color, t: numbe
   return target;
 }
 
+function applyClipBelow(mat: THREE.Material, maskY: number) {
+  mat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -maskY)];
+  mat.clipIntersection = false;
+  mat.needsUpdate = true;
+}
+
+function applyClipAbove(mat: THREE.Material, maskY: number) {
+  mat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), maskY)];
+  mat.clipIntersection = false;
+  mat.needsUpdate = true;
+}
+
 export default function CityWorld() {
   const worldRef = useRef<THREE.Group>(null);
-  const buildingsRef = useRef<THREE.InstancedMesh>(null);
-  const wireRef = useRef<THREE.InstancedMesh>(null);
+  const greenBuildingsRef = useRef<THREE.InstancedMesh>(null);
+  const whiteBuildingsRef = useRef<THREE.InstancedMesh>(null);
+  const greenWireRef = useRef<THREE.InstancedMesh>(null);
+  const whiteWireRef = useRef<THREE.InstancedMesh>(null);
+  const fireBandRef = useRef<THREE.Mesh>(null);
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
   const floorLayersRef = useRef<THREE.Mesh[]>([]);
   const floorTexturesRef = useRef<THREE.Texture[]>([]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const fireBandTex = useMemo(() => makeFireBandTexture(), []);
 
   const { buildings, greenWindowTex, whiteWindowTex } = useMemo(() => {
     const segments = 4;
@@ -120,11 +161,12 @@ export default function CityWorld() {
         transparent: true,
         opacity: 0.92 - i * 0.12,
         depthWrite: i === 0,
+        color: new THREE.Color("#ffffff"),
       })
     )
   );
 
-  const buildingMat = useRef(
+  const greenBuildingMat = useRef(
     new THREE.MeshStandardMaterial({
       color: CYBER_GREEN.building,
       emissive: CYBER_GREEN.emissive,
@@ -133,12 +175,31 @@ export default function CityWorld() {
       metalness: 0.2,
     })
   );
-  const wireMat = useRef(
+  const whiteBuildingMat = useRef(
+    new THREE.MeshStandardMaterial({
+      color: CYBER_WHITE.building,
+      emissive: CYBER_WHITE.emissive,
+      emissiveIntensity: 0.35,
+      roughness: 0.35,
+      metalness: 0.65,
+    })
+  );
+  const greenWireMat = useRef(
     new THREE.MeshBasicMaterial({
       color: CYBER_GREEN.wire,
       wireframe: true,
       transparent: true,
       opacity: 0.2,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
+  const whiteWireMat = useRef(
+    new THREE.MeshBasicMaterial({
+      color: CYBER_WHITE.wire,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.12,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     })
@@ -161,24 +222,41 @@ export default function CityWorld() {
       side: THREE.DoubleSide,
     })
   );
+  const fireBandMat = useRef(
+    new THREE.MeshBasicMaterial({
+      map: fireBandTex,
+      transparent: true,
+      opacity: 0.85,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    })
+  );
 
   useEffect(() => {
-    buildingMat.current.emissiveMap = greenWindowTex;
-    buildingMat.current.needsUpdate = true;
-  }, [greenWindowTex]);
+    greenBuildingMat.current.emissiveMap = greenWindowTex;
+    greenBuildingMat.current.needsUpdate = true;
+    whiteBuildingMat.current.emissiveMap = whiteWindowTex;
+    whiteBuildingMat.current.needsUpdate = true;
+  }, [greenWindowTex, whiteWindowTex]);
 
   useEffect(() => {
-    if (!buildingsRef.current || !wireRef.current) return;
+    if (!greenBuildingsRef.current || !whiteBuildingsRef.current) return;
+    if (!greenWireRef.current || !whiteWireRef.current) return;
     buildings.forEach((b, i) => {
       dummy.position.set(b.x, b.y, b.z);
       dummy.scale.set(b.sx, b.sy, b.sz);
       dummy.rotation.set(0, b.ry, 0);
       dummy.updateMatrix();
-      buildingsRef.current!.setMatrixAt(i, dummy.matrix);
-      wireRef.current!.setMatrixAt(i, dummy.matrix);
+      greenBuildingsRef.current!.setMatrixAt(i, dummy.matrix);
+      whiteBuildingsRef.current!.setMatrixAt(i, dummy.matrix);
+      greenWireRef.current!.setMatrixAt(i, dummy.matrix);
+      whiteWireRef.current!.setMatrixAt(i, dummy.matrix);
     });
-    buildingsRef.current.instanceMatrix.needsUpdate = true;
-    wireRef.current.instanceMatrix.needsUpdate = true;
+    greenBuildingsRef.current.instanceMatrix.needsUpdate = true;
+    whiteBuildingsRef.current.instanceMatrix.needsUpdate = true;
+    greenWireRef.current.instanceMatrix.needsUpdate = true;
+    whiteWireRef.current.instanceMatrix.needsUpdate = true;
   }, [buildings, dummy]);
 
   useEffect(() => {
@@ -214,7 +292,9 @@ export default function CityWorld() {
     const travel = p * TRAVEL_MAX;
     const loopOffset = travel % SEGMENT;
     const cityReveal = getCloudCityBlend(p);
-    const whiteBlend = getCityWhiteBlend(p);
+    const blackPhase = getCityBlackPhase(p);
+    const fireProgress = getCityWhiteFireProgress(p);
+    const maskY = getCityWhiteFireMaskY(p);
 
     if (worldRef.current) {
       worldRef.current.position.z = -travel + loopOffset;
@@ -222,6 +302,21 @@ export default function CityWorld() {
       worldRef.current.position.y = -6 + cityReveal * 6;
       worldRef.current.scale.setScalar(0.4 + cityReveal * 0.6);
       worldRef.current.visible = cityReveal > 0.02;
+    }
+
+    applyClipBelow(greenBuildingMat.current, maskY);
+    applyClipBelow(greenWireMat.current, maskY);
+    applyClipAbove(whiteBuildingMat.current, maskY);
+    applyClipAbove(whiteWireMat.current, maskY);
+
+    if (fireBandRef.current) {
+      fireBandRef.current.visible = fireProgress > 0.01 && fireProgress < 0.995;
+      fireBandRef.current.position.y = maskY;
+      fireBandRef.current.position.z = -30 + (travel * 0.02) % 4;
+      fireBandMat.current.opacity = 0.55 + Math.sin(t * 8) * 0.15;
+      if (fireBandMat.current.map) {
+        fireBandMat.current.map.offset.x = t * 0.35;
+      }
     }
 
     const floorScroll = (travel * 0.08) % 1;
@@ -233,8 +328,22 @@ export default function CityWorld() {
       if (mesh) mesh.position.z = -48 - i * 0.35 - (travel * 0.02) % 2;
     });
 
+    floorLayerMats.current.forEach((mat, i) => {
+      const baseOpacity = 0.92 - i * 0.12;
+      mat.opacity = baseOpacity * (1 - blackPhase * 0.92);
+      lerpColor(mat.color, new THREE.Color("#ffffff"), BLACK_VOID, blackPhase);
+      if (blackPhase > 0.85) {
+        mat.map = null;
+      } else if (floorTexturesRef.current[i] && !mat.map) {
+        mat.map = floorTexturesRef.current[i];
+      }
+      mat.needsUpdate = true;
+    });
+
     if (gridRef.current) {
       gridRef.current.position.z = -(travel * 0.35) % 8;
+      gridMat.current.opacity = 0.16 * (1 - blackPhase * 0.9) * (1 - fireProgress * 0.4);
+      lerpColor(gridMat.current.color, CYBER_GREEN.grid, CYBER_WHITE.grid, fireProgress);
     }
 
     if (fogRef.current) {
@@ -243,47 +352,61 @@ export default function CityWorld() {
       });
     }
 
-    lerpColor(buildingMat.current.color, CYBER_GREEN.building, CYBER_WHITE.building, whiteBlend);
-    lerpColor(buildingMat.current.emissive, CYBER_GREEN.emissive, CYBER_WHITE.emissive, whiteBlend);
-    buildingMat.current.emissiveIntensity = 0.9 * (1 - whiteBlend * 0.4) + whiteBlend * 0.35;
-    buildingMat.current.emissiveMap = whiteBlend > 0.5 ? whiteWindowTex : greenWindowTex;
-    buildingMat.current.metalness = 0.2 + whiteBlend * 0.45;
-    buildingMat.current.roughness = 0.75 * (1 - whiteBlend * 0.5);
-
-    lerpColor(wireMat.current.color, CYBER_GREEN.wire, CYBER_WHITE.wire, whiteBlend);
-    wireMat.current.opacity = 0.2 * (1 - whiteBlend) + 0.12 * whiteBlend;
-
-    lerpColor(gridMat.current.color, CYBER_GREEN.grid, CYBER_WHITE.grid, whiteBlend);
-    gridMat.current.opacity = 0.16 * (1 - whiteBlend) + 0.1 * whiteBlend;
-
-    lerpColor(smokeMat.current.color, CYBER_GREEN.fog, CYBER_WHITE.fog, whiteBlend);
-    smokeMat.current.opacity = 0.08 * (1 - whiteBlend) + 0.04 * whiteBlend;
+    lerpColor(smokeMat.current.color, CYBER_GREEN.fog, CYBER_WHITE.fog, fireProgress);
+    smokeMat.current.opacity = 0.08 * (1 - fireProgress * 0.5) * (1 - blackPhase * 0.6);
 
     if (scene.fog && scene.fog instanceof THREE.Fog) {
       const fogGreen = new THREE.Color("#87b8d8");
       const fogWhite = new THREE.Color("#eef2f8");
-      lerpColor(scene.fog.color, fogGreen, fogWhite, whiteBlend);
+      const fogColor = new THREE.Color().lerpColors(fogGreen, fogWhite, fireProgress);
+      lerpColor(scene.fog.color, fogColor, BLACK_VOID, blackPhase);
+      scene.fog.far = 48 + fireProgress * 20 - blackPhase * 10;
     }
 
     if (typeof document !== "undefined") {
-      document.documentElement.style.setProperty("--city-white-blend", String(whiteBlend));
+      document.documentElement.style.setProperty("--city-white-blend", String(fireProgress));
       document.documentElement.style.setProperty("--city-reveal-blend", String(cityReveal));
+      document.documentElement.style.setProperty("--city-black-phase", String(blackPhase));
     }
   });
 
   return (
     <group ref={worldRef}>
       <instancedMesh
-        ref={buildingsRef}
+        ref={greenBuildingsRef}
         args={[undefined, undefined, buildings.length]}
-        material={buildingMat.current}
+        material={greenBuildingMat.current}
       >
         <boxGeometry args={[1, 1, 1]} />
       </instancedMesh>
 
-      <instancedMesh ref={wireRef} args={[undefined, undefined, buildings.length]} material={wireMat.current}>
+      <instancedMesh
+        ref={whiteBuildingsRef}
+        args={[undefined, undefined, buildings.length]}
+        material={whiteBuildingMat.current}
+      >
+        <boxGeometry args={[1, 1, 1]} />
+      </instancedMesh>
+
+      <instancedMesh
+        ref={greenWireRef}
+        args={[undefined, undefined, buildings.length]}
+        material={greenWireMat.current}
+      >
         <boxGeometry args={[1.02, 1.02, 1.02]} />
       </instancedMesh>
+
+      <instancedMesh
+        ref={whiteWireRef}
+        args={[undefined, undefined, buildings.length]}
+        material={whiteWireMat.current}
+      >
+        <boxGeometry args={[1.02, 1.02, 1.02]} />
+      </instancedMesh>
+
+      <mesh ref={fireBandRef} material={fireBandMat.current} visible={false}>
+        <planeGeometry args={[56, 1.8]} />
+      </mesh>
 
       {Array.from({ length: FLOOR_LAYER_COUNT }).map((_, i) => (
         <mesh

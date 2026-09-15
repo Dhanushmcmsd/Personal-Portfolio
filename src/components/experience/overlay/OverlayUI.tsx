@@ -30,6 +30,8 @@ export default function OverlayUI() {
   const projectCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const experienceRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
+  const aboutPaperRef = useRef<HTMLDivElement>(null);
+  const aboutPhotoRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
@@ -80,12 +82,23 @@ export default function OverlayUI() {
         SECTION.about[1],
         0.025
       );
+      const aboutLocal = sectionLocalProgress(p, SECTION.about[0], SECTION.about[1]);
       setEl(
         aboutRef.current,
         aboutOpacity,
         `translate3d(0, ${(1 - aboutOpacity) * 24}px, 0) scale(${0.97 + aboutOpacity * 0.03})`,
         aboutOpacity > 0.35 ? "auto" : "none"
       );
+      if (aboutPaperRef.current) {
+        aboutPaperRef.current.style.setProperty("--paper-open", String(aboutLocal));
+      }
+      if (aboutPhotoRef.current) {
+        aboutPhotoRef.current.style.setProperty("--photo-reveal", String(aboutLocal));
+        aboutPhotoRef.current.style.setProperty(
+          "--photo-glitch",
+          String(aboutLocal * (0.4 + Math.sin(p * 40) * 0.15))
+        );
+      }
 
       const contactOpacity = exclusiveOpacity(
         p,
@@ -142,19 +155,19 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#39ff14]/80">
+        <p className="hero-glitch-text font-mono text-[10px] uppercase tracking-[0.35em] opacity-80">
           {hero.eyebrow}
         </p>
-        <h1 className="hero-cloud-text mt-6 max-w-5xl text-[clamp(2.8rem,9vw,7.5rem)] leading-[0.92] tracking-tight">
+        <h1 className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2.2rem,7vw,5.8rem)] leading-[0.92] tracking-tight">
           {person.displayName.split(" ").map((word) => (
             <span key={word} className="block">
               {word}
             </span>
           ))}
         </h1>
-        <p className="hero-cloud-text mt-8 max-w-xl text-lg md:text-xl">{hero.title}</p>
-        <p className="hero-cloud-sub mt-4 max-w-lg text-sm">{hero.subtitle}</p>
-        <p className="mt-16 font-mono text-[10px] uppercase tracking-[0.3em] text-[#39ff14]/35">
+        <p className="hero-glitch-text mt-8 max-w-xl text-lg md:text-xl">{hero.title}</p>
+        <p className="hero-glitch-text mt-4 max-w-lg text-sm opacity-90">{hero.subtitle}</p>
+        <p className="hero-glitch-text mt-16 font-mono text-[10px] uppercase tracking-[0.3em] opacity-60">
           {hero.scrollLabel} ↓
         </p>
       </div>
@@ -248,25 +261,36 @@ export default function OverlayUI() {
         className="section-about-text absolute inset-0 flex items-center px-6 md:px-16"
         style={{ opacity: 0 }}
       >
-        <div className="max-w-4xl">
-          <h2 className="font-[family-name:var(--font-display)] text-[clamp(3rem,10vw,8rem)] leading-[0.9]">
-            {content.aboutTitle}
-          </h2>
-          <p className="mt-8 max-w-2xl text-lg font-medium leading-relaxed md:text-xl">
-            {content.aboutLead}
-          </p>
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed md:text-base opacity-80">
-            {content.aboutText}
-          </p>
-          <p className="mt-10 font-mono text-[11px] opacity-50">
-            Scroll to explore the city below.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-2">
-            {skills.programming.slice(0, 6).map((s) => (
-              <span key={s} className="font-mono text-[10px] opacity-60">
-                {s}
-              </span>
-            ))}
+        <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-10 md:grid-cols-2">
+          <div ref={aboutPaperRef} className="about-paper-panel" style={{ "--paper-open": 0 } as CSSProperties}>
+            <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.4rem,8vw,5.5rem)] leading-[0.9]">
+              {content.aboutTitle}
+            </h2>
+            <p className="mt-8 max-w-xl text-lg font-medium leading-relaxed md:text-xl">
+              {content.aboutLead}
+            </p>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed md:text-base opacity-80">
+              {content.aboutText}
+            </p>
+            <p className="mt-10 font-mono text-[11px] opacity-50">
+              Scroll to explore the city below.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-2">
+              {skills.programming.slice(0, 6).map((s) => (
+                <span key={s} className="font-mono text-[10px] opacity-60">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div
+            ref={aboutPhotoRef}
+            className="about-photo-wrap hidden md:block"
+            style={{ "--photo-reveal": 0, "--photo-glitch": 0 } as CSSProperties}
+          >
+            <div className="about-photo-frame">
+              <img src={person.photo} alt={person.displayName} />
+            </div>
           </div>
         </div>
       </div>
