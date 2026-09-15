@@ -21,6 +21,8 @@ interface VirusMascotProps {
 const VIRUS_SCALE = 0.009;
 const EAT_DURATION_MS = 2000;
 
+export { VIRUS_SCALE };
+
 export default function VirusMascot({
   targetPosition,
   eatTarget,

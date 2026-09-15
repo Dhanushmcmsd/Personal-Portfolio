@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo_Black, DM_Sans } from "next/font/google";
+import localFont from "next/font/local";
+import { Archivo_Black, DM_Sans, Saira_Stencil_One, Teko } from "next/font/google";
 import "./globals.css";
 
 const archivo = Archivo_Black({
@@ -11,6 +12,24 @@ const archivo = Archivo_Black({
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
+});
+
+const stardom = localFont({
+  src: "../../public/fonts/stardom.woff2",
+  variable: "--font-name",
+  display: "swap",
+});
+
+const teko = Teko({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-hero-body",
+});
+
+const kola = Saira_Stencil_One({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-nav",
 });
 
 export const metadata: Metadata = {
@@ -32,7 +51,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${dmSans.variable}`}>
+    <html
+      lang="en"
+      className={`${archivo.variable} ${dmSans.variable} ${stardom.variable} ${teko.variable} ${kola.variable}`}
+    >
       <body className="antialiased">{children}</body>
     </html>
   );

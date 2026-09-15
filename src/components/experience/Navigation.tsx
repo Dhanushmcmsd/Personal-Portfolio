@@ -18,19 +18,17 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 md:px-10"
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-5 md:px-10"
       style={{
         paddingTop: "max(1.25rem, env(safe-area-inset-top))",
       }}
     >
-      <button
-        onClick={() => scrollEngine.seek(0)}
-        className="pressable text-left"
-      >
-        <span className="nav-pixel-outline font-[family-name:var(--font-display)] text-xs tracking-tight text-[#F4F1EA]/90">
+      <button onClick={() => scrollEngine.seek(0)} className="pressable text-left">
+        <span className="nav-kola-text text-xs text-[#F4F1EA]/90">
           {PORTFOLIO_CONFIG.person.displayName}
         </span>
-        <span className="nav-pixel-outline mt-0.5 block text-[9px] uppercase text-[#F4F1EA]/40">
+        <span className="nav-kola-text mt-0.5 block text-[10px] text-[#F4F1EA]/45">
           {PORTFOLIO_CONFIG.person.shortRole}
         </span>
       </button>
@@ -40,7 +38,7 @@ export default function Navigation() {
           <button
             key={link.key}
             onClick={() => seek(link.key)}
-            className="nav-pixel-outline pressable text-[10px] uppercase text-[#F4F1EA]/50 transition-colors hover:text-[#00E5FF]"
+            className="nav-kola-text pressable text-[11px] text-[#F4F1EA]/55 transition-colors hover:text-[#00E5FF]"
           >
             {link.label}
           </button>

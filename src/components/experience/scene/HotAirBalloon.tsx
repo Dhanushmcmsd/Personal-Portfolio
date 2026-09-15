@@ -6,8 +6,9 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { getHeroCloudOpacity } from "@/lib/scroll/timeline";
+import { VIRUS_SCALE } from "./VirusMascot";
 
-const BALLOON_SCALE = 0.022;
+const BALLOON_SCALE = VIRUS_SCALE * 0.5;
 
 export default function HotAirBalloon() {
   const groupRef = useRef<THREE.Group>(null);

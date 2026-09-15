@@ -162,19 +162,17 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="hero-glitch-text text-[10px] opacity-80">
+        <p className="hero-eyebrow-text hero-gold-outline text-[13px] md:text-[15px] opacity-90">
           {hero.eyebrow}
         </p>
-        <h1 className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2rem,6.5vw,5rem)] leading-[1.05]">
-          {person.displayName.split(" ").map((word, i) => (
-            <span key={`${word}-${i}`} className="hero-glitch-line">
-              {word}
-            </span>
-          ))}
+        <h1 className="hero-name-text hero-gold-outline mt-6 max-w-full text-[clamp(1.55rem,5.8vw,5.8rem)] leading-none">
+          {person.displayName}
         </h1>
-        <p className="hero-glitch-text mt-8 max-w-xl text-base md:text-lg">{hero.title}</p>
-        <p className="hero-glitch-text mt-4 max-w-lg text-xs md:text-sm opacity-90">{hero.subtitle}</p>
-        <p className="hero-glitch-text mt-16 text-[10px] opacity-60">
+        <p className="hero-body-text hero-gold-outline mt-8 max-w-2xl text-xl md:text-2xl">{hero.title}</p>
+        <p className="hero-body-text hero-gold-outline mt-4 max-w-2xl text-sm md:text-base opacity-95">
+          {hero.subtitle}
+        </p>
+        <p className="hero-body-text hero-gold-outline mt-16 text-[13px] md:text-[15px] opacity-75">
           {hero.scrollLabel} ↓
         </p>
       </div>

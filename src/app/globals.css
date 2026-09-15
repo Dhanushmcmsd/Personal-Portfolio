@@ -7,13 +7,15 @@
   --color-accent-secondary: #8B5CFF;
   --font-display: "Archivo Black", sans-serif;
   --font-body: "DM Sans", sans-serif;
-  --font-hero: "Aalto Display", sans-serif;
+  --font-name: "Stardom", serif;
+  --font-hero-body: "Teko", sans-serif;
+  --font-nav: "Kola", "Saira Stencil One", sans-serif;
 }
 
 @font-face {
-  font-family: "Aalto Display";
-  src: url("/fonts/aalto-display.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Stardom";
+  src: url("/fonts/stardom.woff2") format("woff2");
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
@@ -201,39 +203,49 @@ canvas {
   color: #722f37;
 }
 
-.hero-glitch-text {
-  position: relative;
-  font-family: var(--font-hero), "Aalto Display", sans-serif;
-  font-weight: 400;
-  color: #39ff14;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+.hero-gold-outline {
   text-shadow:
-    1px 0 #041504,
-    -1px 0 #041504,
-    0 1px #041504,
-    0 -1px #041504,
-    2px 0 rgba(4, 21, 4, 0.95),
-    -2px 0 rgba(4, 21, 4, 0.95),
-    0 2px rgba(4, 21, 4, 0.95),
-    0 -2px rgba(4, 21, 4, 0.95),
-    0 0 10px rgba(57, 255, 20, 0.22);
+    1px 0 #d4af37,
+    -1px 0 #d4af37,
+    0 1px #d4af37,
+    0 -1px #d4af37,
+    2px 0 #a8841f,
+    -2px 0 #a8841f,
+    0 2px #a8841f,
+    0 -2px #a8841f,
+    0 0 14px rgba(255, 214, 120, 0.18);
+}
+
+.hero-name-text {
+  position: relative;
+  font-family: var(--font-name), "Stardom", serif;
+  font-weight: 500;
+  color: #39ff14;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hero-eyebrow-text,
+.hero-body-text {
+  position: relative;
+  font-family: var(--font-hero-body), "Teko", sans-serif;
+  font-weight: 500;
+  color: #39ff14;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.hero-name-text,
+.hero-eyebrow-text,
+.hero-body-text {
   animation: heroHackerGlitch 4.5s steps(2, end) infinite;
 }
 
-.hero-glitch-line {
-  display: block;
-}
-
-.nav-pixel-outline {
-  letter-spacing: 0.12em;
-  text-shadow:
-    1px 0 rgba(0, 0, 0, 0.85),
-    -1px 0 rgba(0, 0, 0, 0.85),
-    0 1px rgba(0, 0, 0, 0.85),
-    0 -1px rgba(0, 0, 0, 0.85),
-    2px 0 rgba(6, 8, 11, 0.9),
-    -2px 0 rgba(6, 8, 11, 0.9);
+.nav-kola-text {
+  font-family: var(--font-nav), "Kola", "Saira Stencil One", sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 @keyframes heroHackerGlitch {
@@ -244,13 +256,13 @@ canvas {
   12% {
     transform: translate(-1px, 0);
     text-shadow:
-      1px 0 #041504,
-      -1px 0 #041504,
-      0 1px #041504,
-      0 -1px #041504,
-      3px 0 rgba(0, 229, 255, 0.35),
-      -3px 0 rgba(57, 255, 20, 0.45),
-      0 0 12px rgba(57, 255, 20, 0.28);
+      1px 0 #d4af37,
+      -1px 0 #d4af37,
+      0 1px #d4af37,
+      0 -1px #d4af37,
+      3px 0 rgba(212, 175, 55, 0.55),
+      -3px 0 rgba(255, 214, 120, 0.45),
+      0 0 14px rgba(255, 214, 120, 0.28);
   }
   24% {
     transform: translate(1px, -1px);
