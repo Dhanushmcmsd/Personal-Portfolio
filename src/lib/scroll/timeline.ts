@@ -12,7 +12,7 @@ export const TIMELINE = {
   python: 0.46,
   experience: 0.58,
   about: 0.72,
-  contact: 0.88,
+  contact: 0.9,
   end: 1,
 } as const;
 
@@ -23,8 +23,8 @@ export const SECTION = {
   finance: [0.32, 0.44] as const,
   python: [0.44, 0.56] as const,
   experience: [0.56, 0.68] as const,
-  about: [0.72, 0.84] as const,
-  contact: [0.88, 1] as const,
+  about: [0.72, 0.87] as const,
+  contact: [0.9, 1] as const,
 };
 
 export const NAV_TARGETS: Record<string, number> = {
@@ -53,8 +53,8 @@ export const CAMERA_KEYFRAMES: CameraKeyframe[] = [
   { t: 0.52, position: new THREE.Vector3(-0.5, 0.46, -52), lookAt: new THREE.Vector3(0.15, 0.06, -62), fov: 36 },
   { t: 0.58, position: new THREE.Vector3(0, 0.75, -62), lookAt: new THREE.Vector3(0, 0.15, -72), fov: 38 },
   { t: 0.72, position: new THREE.Vector3(0.2, 0.55, -72), lookAt: new THREE.Vector3(-0.1, 0.1, -82), fov: 36 },
-  { t: 0.84, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
-  { t: 0.92, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
+  { t: 0.87, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
+  { t: 0.94, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
   { t: 1, position: new THREE.Vector3(0, 0.28, -84), lookAt: new THREE.Vector3(0, -0.05, -92), fov: 30 },
 ];
 

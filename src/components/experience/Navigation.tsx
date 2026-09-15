@@ -27,10 +27,10 @@ export default function Navigation() {
         onClick={() => scrollEngine.seek(0)}
         className="pressable text-left"
       >
-        <span className="font-[family-name:var(--font-display)] text-xs tracking-tight text-[#F4F1EA]/90">
+        <span className="nav-pixel-outline font-[family-name:var(--font-display)] text-xs tracking-tight text-[#F4F1EA]/90">
           {PORTFOLIO_CONFIG.person.displayName}
         </span>
-        <span className="mt-0.5 block text-[9px] uppercase tracking-[0.2em] text-[#F4F1EA]/40">
+        <span className="nav-pixel-outline mt-0.5 block text-[9px] uppercase text-[#F4F1EA]/40">
           {PORTFOLIO_CONFIG.person.shortRole}
         </span>
       </button>
@@ -40,7 +40,7 @@ export default function Navigation() {
           <button
             key={link.key}
             onClick={() => seek(link.key)}
-            className="pressable text-[10px] uppercase tracking-[0.25em] text-[#F4F1EA]/50 transition-colors hover:text-[#00E5FF]"
+            className="nav-pixel-outline pressable text-[10px] uppercase text-[#F4F1EA]/50 transition-colors hover:text-[#00E5FF]"
           >
             {link.label}
           </button>

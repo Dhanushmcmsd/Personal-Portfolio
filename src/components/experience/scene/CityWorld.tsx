@@ -4,12 +4,8 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import {
-  getCityBlackPhase,
-  getCityWhiteFireMaskY,
-  getCityWhiteFireProgress,
-  getCloudCityBlend,
-} from "@/lib/scroll/timeline";
+import { getCityBlackPhase, getCityWhiteFireMaskY, getCityWhiteFireProgress, getCloudCityBlend } from "@/lib/scroll/timeline";
+import FloorReflection from "./FloorReflection";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
@@ -394,6 +390,8 @@ export default function CityWorld() {
           <planeGeometry args={[56, 260]} />
         </mesh>
       ))}
+
+      <FloorReflection />
 
       <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.24, -30]} material={gridMat.current}>
         <planeGeometry args={[14, 260, 1, 52]} />

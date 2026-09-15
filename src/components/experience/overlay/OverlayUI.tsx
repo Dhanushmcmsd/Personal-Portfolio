@@ -10,9 +10,14 @@ import {
   inverseRangeProgress,
   rangeProgress,
   sectionLocalProgress,
+  smootherstep,
   SECTION,
   TIMELINE,
 } from "@/lib/scroll/timeline";
+
+function photoRevealProgress(local: number) {
+  return smootherstep(0.06, 0.92, local);
+}
 
 function setEl(
   el: HTMLElement | null,
@@ -94,10 +99,11 @@ export default function OverlayUI() {
         aboutPaperRef.current.style.setProperty("--paper-open", String(aboutLocal));
       }
       if (aboutPhotoRef.current) {
-        aboutPhotoRef.current.style.setProperty("--photo-reveal", String(aboutLocal));
+        const photoReveal = photoRevealProgress(aboutLocal);
+        aboutPhotoRef.current.style.setProperty("--photo-reveal", String(photoReveal));
         aboutPhotoRef.current.style.setProperty(
           "--photo-glitch",
-          String(aboutLocal * (0.4 + Math.sin(p * 40) * 0.15))
+          String(photoReveal * (0.15 + Math.sin(p * 24) * 0.08))
         );
       }
 
@@ -156,29 +162,19 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="hero-glitch-text text-[10px] tracking-[0.35em] opacity-80" data-text={hero.eyebrow}>
+        <p className="hero-glitch-text text-[10px] opacity-80">
           {hero.eyebrow}
         </p>
-        <h1
-          className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2rem,6.5vw,5rem)] leading-[0.92]"
-          data-text={person.displayName}
-        >
-          {person.displayName.split(" ").map((word) => (
-            <span key={word} className="block">
+        <h1 className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2rem,6.5vw,5rem)] leading-[1.05]">
+          {person.displayName.split(" ").map((word, i) => (
+            <span key={`${word}-${i}`} className="hero-glitch-line">
               {word}
             </span>
           ))}
         </h1>
-        <p className="hero-glitch-text mt-8 max-w-xl text-base md:text-lg" data-text={hero.title}>
-          {hero.title}
-        </p>
-        <p className="hero-glitch-text mt-4 max-w-lg text-xs md:text-sm opacity-90" data-text={hero.subtitle}>
-          {hero.subtitle}
-        </p>
-        <p
-          className="hero-glitch-text mt-16 text-[10px] tracking-[0.3em] opacity-60"
-          data-text={`${hero.scrollLabel} ↓`}
-        >
+        <p className="hero-glitch-text mt-8 max-w-xl text-base md:text-lg">{hero.title}</p>
+        <p className="hero-glitch-text mt-4 max-w-lg text-xs md:text-sm opacity-90">{hero.subtitle}</p>
+        <p className="hero-glitch-text mt-16 text-[10px] opacity-60">
           {hero.scrollLabel} ↓
         </p>
       </div>

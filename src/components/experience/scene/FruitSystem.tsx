@@ -116,9 +116,9 @@ export default function FruitSystem({
         >
           <Html
             center
-            distanceFactor={18}
+            distanceFactor={72}
             style={{
-              fontSize: "11px",
+              fontSize: "3px",
               lineHeight: 1,
               pointerEvents: "none",
               userSelect: "none",

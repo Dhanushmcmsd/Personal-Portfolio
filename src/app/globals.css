@@ -206,114 +206,60 @@ canvas {
   font-family: var(--font-hero), "Aalto Display", sans-serif;
   font-weight: 400;
   color: #39ff14;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  -webkit-text-stroke: 0.5px rgba(57, 255, 20, 0.35);
-  paint-order: stroke fill;
   text-shadow:
-    0 0 8px rgba(57, 255, 20, 0.35),
-    0 0 18px rgba(57, 255, 20, 0.15);
-  animation: heroHackerGlitch 3.2s steps(1, end) infinite;
+    1px 0 #041504,
+    -1px 0 #041504,
+    0 1px #041504,
+    0 -1px #041504,
+    2px 0 rgba(4, 21, 4, 0.95),
+    -2px 0 rgba(4, 21, 4, 0.95),
+    0 2px rgba(4, 21, 4, 0.95),
+    0 -2px rgba(4, 21, 4, 0.95),
+    0 0 10px rgba(57, 255, 20, 0.22);
+  animation: heroHackerGlitch 4.5s steps(2, end) infinite;
 }
 
-.hero-glitch-text::before,
-.hero-glitch-text::after {
-  content: attr(data-text);
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.hero-glitch-line {
+  display: block;
 }
 
-.hero-glitch-text::before {
-  color: rgba(0, 229, 255, 0.55);
-  clip-path: inset(0 0 58% 0);
-  transform: translate(-1px, 0);
-  animation: heroGlitchSliceA 3.2s steps(1, end) infinite;
-}
-
-.hero-glitch-text::after {
-  color: rgba(57, 255, 20, 0.45);
-  clip-path: inset(42% 0 0 0);
-  transform: translate(1px, 0);
-  animation: heroGlitchSliceB 3.2s steps(1, end) infinite;
+.nav-pixel-outline {
+  letter-spacing: 0.12em;
+  text-shadow:
+    1px 0 rgba(0, 0, 0, 0.85),
+    -1px 0 rgba(0, 0, 0, 0.85),
+    0 1px rgba(0, 0, 0, 0.85),
+    0 -1px rgba(0, 0, 0, 0.85),
+    2px 0 rgba(6, 8, 11, 0.9),
+    -2px 0 rgba(6, 8, 11, 0.9);
 }
 
 @keyframes heroHackerGlitch {
   0%,
   100% {
     transform: translate(0);
-    filter: none;
   }
-  7% {
-    transform: translate(-2px, 1px);
-    filter: hue-rotate(8deg);
-  }
-  14% {
-    transform: translate(2px, -1px);
-  }
-  21% {
+  12% {
     transform: translate(-1px, 0);
     text-shadow:
-      -3px 0 rgba(57, 255, 20, 0.7),
-      3px 0 rgba(0, 229, 255, 0.45),
-      0 0 20px rgba(57, 255, 20, 0.35);
+      1px 0 #041504,
+      -1px 0 #041504,
+      0 1px #041504,
+      0 -1px #041504,
+      3px 0 rgba(0, 229, 255, 0.35),
+      -3px 0 rgba(57, 255, 20, 0.45),
+      0 0 12px rgba(57, 255, 20, 0.28);
   }
-  28% {
-    transform: translate(1px, 1px);
+  24% {
+    transform: translate(1px, -1px);
   }
-  42% {
+  48% {
     transform: translate(0);
   }
-  63% {
-    transform: translate(-1px, -1px);
-    filter: contrast(1.15);
-  }
-  78% {
-    transform: translate(1px, 0);
-  }
-}
-
-@keyframes heroGlitchSliceA {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  7%,
-  11% {
-    opacity: 0.85;
-    transform: translate(-3px, -1px);
-  }
-  21%,
-  24% {
-    opacity: 0.65;
-    transform: translate(2px, 0);
-  }
-  63%,
-  66% {
-    opacity: 0.75;
-    transform: translate(-2px, 1px);
-  }
-}
-
-@keyframes heroGlitchSliceB {
-  0%,
-  100% {
-    opacity: 0;
-  }
-  9%,
-  13% {
-    opacity: 0.8;
-    transform: translate(3px, 1px);
-  }
-  24%,
-  27% {
-    opacity: 0.6;
-    transform: translate(-2px, 0);
-  }
-  65%,
-  68% {
-    opacity: 0.7;
-    transform: translate(2px, -1px);
+  72% {
+    transform: translate(-1px, 1px);
   }
 }
 
@@ -427,24 +373,24 @@ canvas {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border: 2px solid rgba(16, 16, 16, calc(0.2 + var(--photo-reveal) * 0.5));
-  box-shadow: 0 16px 48px rgba(0, 0, 0, calc(var(--photo-reveal) * 0.25));
+  border: 2px solid rgba(16, 16, 16, calc(0.15 + var(--photo-reveal) * 0.55));
+  box-shadow: 0 16px 48px rgba(0, 0, 0, calc(var(--photo-reveal) * 0.28));
   clip-path: inset(
-    calc((1 - var(--photo-reveal)) * 50%) 0
-    calc((1 - var(--photo-reveal)) * 50%) calc((1 - var(--photo-reveal)) * 100%)
+    0 calc((1 - var(--photo-reveal)) * 100%) 0 0 round 4px
   );
-  transform: scale(calc(0.92 + var(--photo-reveal) * 0.08));
-  filter: contrast(calc(1 + var(--photo-glitch) * 0.35))
-    brightness(calc(1 + var(--photo-glitch) * 0.15));
+  transform: scale(calc(0.88 + var(--photo-reveal) * 0.12))
+    translateY(calc((1 - var(--photo-reveal)) * 28px));
+  filter: contrast(calc(1 + var(--photo-glitch) * 0.12));
 }
 
 .about-photo-frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: calc(var(--photo-reveal) * (0.75 + var(--photo-glitch) * 0.25));
-  transform: translateX(calc(var(--photo-glitch) * 4px));
-  animation: photoGlitchFlicker 2.4s steps(2, end) infinite;
+  object-position: center top;
+  opacity: var(--photo-reveal);
+  transform: scale(calc(1.08 - var(--photo-reveal) * 0.08));
+  animation: photoGlitchFlicker 3.6s steps(2, end) infinite;
 }
 
 @keyframes photoGlitchFlicker {

@@ -1,16 +1,17 @@
 "use client";
 
 import { useMemo, useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { getHeroCloudOpacity } from "@/lib/scroll/timeline";
 
-const BALLOON_SCALE = 0.0025;
+const BALLOON_SCALE = 0.022;
 
 export default function HotAirBalloon() {
   const groupRef = useRef<THREE.Group>(null);
+  const { camera } = useThree();
   const { scene } = useGLTF("/models/cute_hot_air_balloon.glb");
 
   const model = useMemo(() => {
@@ -20,6 +21,7 @@ export default function HotAirBalloon() {
         const mesh = child as THREE.Mesh;
         mesh.castShadow = false;
         mesh.receiveShadow = false;
+        mesh.frustumCulled = false;
       }
     });
     return clone;
@@ -32,21 +34,29 @@ export default function HotAirBalloon() {
     const heroVis = getHeroCloudOpacity(p);
     const t = state.clock.elapsedTime;
 
-    groupRef.current.visible = heroVis > 0.05;
+    if (heroVis < 0.04) {
+      groupRef.current.visible = false;
+      return;
+    }
 
-    const cycle = (t * 0.04) % 1;
-    const x = THREE.MathUtils.lerp(-28, 28, cycle);
-    const y = 4.5 + Math.sin(t * 0.35) * 0.35;
-    const z = -52 + Math.sin(t * 0.2) * 2;
+    groupRef.current.visible = true;
 
-    groupRef.current.position.set(x, y, z);
-    groupRef.current.rotation.y = Math.sin(t * 0.15) * 0.08;
-    groupRef.current.rotation.z = Math.sin(t * 0.25) * 0.04;
+    const cycle = (t * 0.022) % 1;
+    const localX = THREE.MathUtils.lerp(-16, 16, cycle);
+    const localY = 0.8 + Math.sin(t * 0.45) * 0.3;
+    const localZ = -22 - Math.sin(t * 0.18) * 1.5;
+
+    const anchor = new THREE.Vector3(localX, localY, localZ);
+    anchor.applyQuaternion(camera.quaternion);
+    anchor.add(camera.position);
+
+    groupRef.current.position.copy(anchor);
+    groupRef.current.quaternion.copy(camera.quaternion);
     groupRef.current.scale.setScalar(BALLOON_SCALE * heroVis);
   });
 
   return (
-    <group ref={groupRef} visible={false}>
+    <group ref={groupRef} visible={false} renderOrder={1}>
       <primitive object={model} />
     </group>
   );
