@@ -9,14 +9,16 @@ import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { rangeProgress } from "@/lib/scroll/timeline";
 import Atmosphere from "./Atmosphere";
 import CameraRig from "./CameraRig";
+import CityWorld from "./CityWorld";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot from "./VirusMascot";
 import FruitSystem, { screenToWorld, type Fruit } from "./FruitSystem";
 
-const PROJECT_POSITIONS = [
-  { z: -14, x: 0 },
-  { z: -28, x: 0.5 },
-  { z: -42, x: -0.3 },
+const PROJECT_SLOTS = [
+  { z: -14, x: 0, side: 1 as const },
+  { z: -28, x: 0.4, side: -1 as const },
+  { z: -42, x: -0.25, side: 1 as const },
+  { z: -56, x: 0.35, side: -1 as const },
 ];
 
 export default function ExperienceScene() {
@@ -24,7 +26,7 @@ export default function ExperienceScene() {
   const [fruits, setFruits] = useState<Fruit[]>([]);
   const [fruitTarget, setFruitTarget] = useState<THREE.Vector3 | null>(null);
   const [catchPulse, setCatchPulse] = useState(0);
-  const virusPositionRef = useRef(new THREE.Vector3(1.8, -0.4, -71.5));
+  const virusPositionRef = useRef(new THREE.Vector3(1.2, -0.35, -88));
   const fruitIdRef = useRef(0);
   const { camera, size } = useThree();
 
@@ -66,17 +68,21 @@ export default function ExperienceScene() {
       <Atmosphere />
       <CameraRig />
 
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[5, 8, 5]} intensity={0.8} color="#F4F1EA" />
-      <directionalLight position={[-4, 2, -10]} intensity={0.3} color="#00E5FF" />
+      <ambientLight intensity={0.28} />
+      <directionalLight position={[5, 10, 4]} intensity={0.75} color="#F4F1EA" castShadow />
+      <directionalLight position={[-6, 3, -12]} intensity={0.35} color="#00E5FF" />
+      <hemisphereLight args={["#1a3040", "#06080B", 0.35]} />
 
       <Suspense fallback={null}>
+        <CityWorld />
+
         {PORTFOLIO_CONFIG.projects.map((project, i) => (
           <ProjectExhibit
             key={project.id}
             project={project}
-            zPosition={PROJECT_POSITIONS[i].z}
-            xOffset={PROJECT_POSITIONS[i].x}
+            zPosition={PROJECT_SLOTS[i]?.z ?? -14 - i * 14}
+            xOffset={PROJECT_SLOTS[i]?.x ?? 0}
+            side={PROJECT_SLOTS[i]?.side ?? (i % 2 === 0 ? 1 : -1)}
             onSelect={() => openProject(project)}
           />
         ))}
@@ -93,9 +99,8 @@ export default function ExperienceScene() {
         />
       </Suspense>
 
-      {/* Invisible click plane for fruit spawning in final scene */}
       <mesh
-        position={[0, 0, -71]}
+        position={[0, 0, -88]}
         visible={false}
         onPointerDown={(e) => {
           const p = scrollEngine.progress;

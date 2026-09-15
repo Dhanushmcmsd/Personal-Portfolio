@@ -51,7 +51,7 @@ class ScrollEngine {
   };
 
   private tick = () => {
-    const damping = this.reducedMotion ? 0.22 : 0.085;
+    const damping = this.reducedMotion ? 0.28 : 0.14;
     this.current += (this.target - this.current) * damping;
     this.progress = Math.max(0, Math.min(1, this.current));
     this.velocity = this.target - this.lastTarget;

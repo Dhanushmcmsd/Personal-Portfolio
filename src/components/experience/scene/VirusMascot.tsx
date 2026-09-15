@@ -14,9 +14,16 @@ interface VirusMascotProps {
   positionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
-export default function VirusMascot({ targetPosition, catchPulse, positionRef }: VirusMascotProps) {
+const VIRUS_SCALE = 0.42;
+const BASE_POSITION = new THREE.Vector3(1.2, -0.35, -88);
+
+export default function VirusMascot({
+  targetPosition,
+  catchPulse,
+  positionRef,
+}: VirusMascotProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const currentPos = useRef(new THREE.Vector3(1.8, -0.4, -71.5));
+  const currentPos = useRef(BASE_POSITION.clone());
   const { scene } = useGLTF("/models/dhanush-virus-mascot.glb");
 
   const clonedScene = useMemo(() => {
@@ -39,30 +46,30 @@ export default function VirusMascot({ targetPosition, catchPulse, positionRef }:
     groupRef.current.visible = visible > 0.05;
     if (visible <= 0.05) return;
 
-    const base = new THREE.Vector3(1.8, -0.4, -71.5);
     const idle = new THREE.Vector3(
-      Math.sin(state.clock.elapsedTime * 0.8) * 0.15,
-      Math.sin(state.clock.elapsedTime * 1.1) * 0.1,
+      Math.sin(state.clock.elapsedTime * 1.2) * 0.12,
+      Math.sin(state.clock.elapsedTime * 1.5) * 0.08,
       0
     );
 
     if (targetPosition) {
-      currentPos.current.lerp(targetPosition, 0.08);
+      currentPos.current.lerp(targetPosition, 0.12);
     } else {
-      currentPos.current.lerp(base.clone().add(idle), 0.04);
+      currentPos.current.lerp(BASE_POSITION.clone().add(idle), 0.06);
     }
 
     groupRef.current.position.copy(currentPos.current);
     if (positionRef) positionRef.current.copy(currentPos.current);
-    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.6) * 0.2;
-    groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 0.9) * 0.05;
-    groupRef.current.scale.setScalar((1.2 + catchPulse * 0.15) * visible);
+    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.85) * 0.25;
+    groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.1) * 0.08;
+    groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.6) * 0.05;
+    groupRef.current.scale.setScalar((1 + catchPulse * 0.12) * visible);
   });
 
   return (
-    <group ref={groupRef} position={[1.8, -0.4, -71.5]}>
-      <primitive object={clonedScene} scale={1.2} />
-      <pointLight position={[0, 1, 1]} intensity={0.6} color="#8B5CFF" distance={4} />
+    <group ref={groupRef} position={BASE_POSITION.toArray()}>
+      <primitive object={clonedScene} scale={VIRUS_SCALE} />
+      <pointLight position={[0, 0.6, 0.8]} intensity={0.45} color="#8B5CFF" distance={3} />
     </group>
   );
 }

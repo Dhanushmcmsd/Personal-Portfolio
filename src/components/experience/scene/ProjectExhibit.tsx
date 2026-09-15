@@ -2,16 +2,23 @@
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { Float, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import type { ProjectConfig } from "@/config/portfolio";
+import {
+  computeExhibitTransform,
+  getAnimationMode,
+  getModeBlend,
+} from "@/lib/animation/exhibitVariants";
 import { useImageTexture } from "@/lib/three/useImageTexture";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getGlitchIntensity, rangeProgress, smoothstep } from "@/lib/scroll/timeline";
+import { exclusiveOpacity, getGlitchIntensity } from "@/lib/scroll/timeline";
 
 interface ProjectExhibitProps {
   project: ProjectConfig;
   zPosition: number;
   xOffset: number;
+  side: -1 | 1;
   onSelect?: () => void;
 }
 
@@ -19,10 +26,12 @@ export default function ProjectExhibit({
   project,
   zPosition,
   xOffset,
+  side,
   onSelect,
 }: ProjectExhibitProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const frameRef = useRef<THREE.Mesh>(null);
+  const screenRef = useRef<THREE.Mesh>(null);
+  const backPlateRef = useRef<THREE.Mesh>(null);
   const texture = useImageTexture(project.image);
 
   const uniforms = useMemo(
@@ -58,18 +67,19 @@ export default function ProjectExhibit({
         void main() {
           vec2 uv = vUv;
           if (uGlitch > 0.01) {
-            float shift = sin(uv.y * 120.0 + uTime * 40.0) * 0.004 * uGlitch;
+            float shift = sin(uv.y * 140.0 + uTime * 55.0) * 0.005 * uGlitch;
             uv.x += shift;
           }
           vec4 tex = texture2D(uMap, uv);
           vec3 col = tex.rgb;
           if (uGlitch > 0.01) {
-            float r = texture2D(uMap, uv + vec2(0.01 * uGlitch, 0.0)).r;
-            float b = texture2D(uMap, uv - vec2(0.01 * uGlitch, 0.0)).b;
+            float r = texture2D(uMap, uv + vec2(0.012 * uGlitch, 0.0)).r;
+            float b = texture2D(uMap, uv - vec2(0.012 * uGlitch, 0.0)).b;
             col = vec3(r, col.g, b);
           }
-          float edge = smoothstep(0.0, 0.02, min(uv.x, min(uv.y, min(1.0-uv.x, 1.0-uv.y))));
-          col += uColor * 0.08 * edge;
+          float edge = smoothstep(0.0, 0.025, min(uv.x, min(uv.y, min(1.0-uv.x, 1.0-uv.y))));
+          col += uColor * 0.12 * edge;
+          col *= 0.92 + edge * 0.08;
           gl_FragColor = vec4(col, tex.a);
         }
       `,
@@ -78,78 +88,112 @@ export default function ProjectExhibit({
   }, [texture, project.color, uniforms.uGlitch, uniforms.uTime]);
 
   useFrame((state) => {
-    if (!screenMaterial) return;
-    const p = scrollEngine.progress;
-    const enter = rangeProgress(p, project.timelineStart - 0.06, project.timelineStart + 0.04);
-    const exit = 1 - smoothstep(project.timelineEnd - 0.04, project.timelineEnd + 0.06, p);
-    const visibility = enter * exit;
+    if (!screenMaterial || !groupRef.current) return;
 
+    const p = scrollEngine.progress;
+    const visibility = exclusiveOpacity(
+      p,
+      project.timelineStart,
+      project.timelineEnd,
+      0.045
+    );
     const glitch = getGlitchIntensity(p);
+    const timeMs = state.clock.elapsedTime * 1000;
+    const mode = getAnimationMode(timeMs);
+    const blend = getModeBlend(timeMs);
+    const anim = computeExhibitTransform(
+      mode,
+      state.clock.elapsedTime,
+      visibility,
+      side
+    );
+
     uniforms.uGlitch.value = glitch;
     uniforms.uTime.value = state.clock.elapsedTime;
 
-    if (groupRef.current) {
-      const depthOffset = (p - project.timelineStart) * 8;
-      groupRef.current.position.set(
-        xOffset + Math.sin(state.clock.elapsedTime * 0.4 + zPosition) * 0.15,
-        Math.sin(state.clock.elapsedTime * 0.5) * 0.08,
-        zPosition - depthOffset * 0.5
-      );
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.08 - 0.05;
-      groupRef.current.rotation.x = Math.cos(state.clock.elapsedTime * 0.25) * 0.03;
-      groupRef.current.scale.setScalar(0.6 + visibility * 0.4);
-      groupRef.current.visible = visibility > 0.02;
-    }
+    const enterScale = 0.55 + visibility * 0.45;
+    const depthOffset = (p - (project.timelineStart + project.timelineEnd) / 2) * 6;
 
-    if (frameRef.current) {
-      const mat = frameRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.3 + glitch * 0.8;
-      mat.opacity = 0.5 + visibility * 0.5;
+    groupRef.current.visible = visibility > 0.015;
+    groupRef.current.position.set(
+      xOffset + anim.x * blend + side * 0.25,
+      anim.y * blend,
+      zPosition - depthOffset + anim.z * blend
+    );
+    groupRef.current.rotation.set(
+      anim.rotX * blend,
+      anim.rotY * blend,
+      anim.rotZ * blend
+    );
+    groupRef.current.scale.setScalar(enterScale * anim.scale);
+
+    if (screenRef.current) {
+      screenRef.current.position.z = 0.12 + anim.textDepth * blend * 0.4;
+    }
+    if (backPlateRef.current) {
+      const mat = backPlateRef.current.material as THREE.MeshStandardMaterial;
+      mat.emissiveIntensity = 0.35 + glitch * 0.9 + visibility * 0.25;
+      mat.opacity = 0.45 + visibility * 0.55;
+      backPlateRef.current.position.z = -0.18 - anim.textDepth * blend * 0.25;
     }
   });
 
   if (!screenMaterial) return null;
 
   return (
-    <group ref={groupRef} position={[xOffset, 0, zPosition]}>
-      <mesh
-        material={screenMaterial}
-        onClick={(e) => {
-          e.stopPropagation();
-          onSelect?.();
-        }}
-        onPointerOver={() => {
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={() => {
-          document.body.style.cursor = "default";
-        }}
-      >
-        <planeGeometry args={[5.2, 3.1]} />
-      </mesh>
+    <Float speed={1.6} rotationIntensity={0.08} floatIntensity={0.18}>
+      <group ref={groupRef} position={[xOffset, 0, zPosition]}>
+        <RoundedBox
+          ref={backPlateRef}
+          args={[5.8, 3.55, 0.12]}
+          radius={0.06}
+          smoothness={4}
+          position={[0, 0, -0.12]}
+        >
+          <meshStandardMaterial
+            color="#0a1018"
+            emissive={project.color}
+            emissiveIntensity={0.35}
+            transparent
+            opacity={0.6}
+            metalness={0.72}
+            roughness={0.18}
+          />
+        </RoundedBox>
 
-      <mesh ref={frameRef} position={[0, 0, -0.06]}>
-        <boxGeometry args={[5.5, 3.4, 0.08]} />
-        <meshStandardMaterial
-          color={project.color}
-          emissive={project.color}
-          emissiveIntensity={0.3}
-          transparent
-          opacity={0.6}
-          metalness={0.6}
-          roughness={0.2}
-        />
-      </mesh>
+        <mesh
+          ref={screenRef}
+          material={screenMaterial}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect?.();
+          }}
+          onPointerOver={() => {
+            document.body.style.cursor = "pointer";
+          }}
+          onPointerOut={() => {
+            document.body.style.cursor = "default";
+          }}
+        >
+          <planeGeometry args={[5.35, 3.05]} />
+        </mesh>
 
-      {/* Neon edge lights */}
-      <mesh position={[-2.8, 0, 0.1]}>
-        <boxGeometry args={[0.06, 3.6, 0.06]} />
-        <meshBasicMaterial color={project.color} transparent opacity={0.7} />
-      </mesh>
-      <mesh position={[2.8, 0, 0.1]}>
-        <boxGeometry args={[0.06, 3.6, 0.06]} />
-        <meshBasicMaterial color={project.color} transparent opacity={0.7} />
-      </mesh>
-    </group>
+        <mesh position={[-2.95, 0, 0.18]}>
+          <boxGeometry args={[0.05, 3.75, 0.05]} />
+          <meshBasicMaterial color={project.color} transparent opacity={0.85} />
+        </mesh>
+        <mesh position={[2.95, 0, 0.18]}>
+          <boxGeometry args={[0.05, 3.75, 0.05]} />
+          <meshBasicMaterial color={project.color} transparent opacity={0.85} />
+        </mesh>
+
+        <mesh position={[0, 1.95, 0.16]} rotation={[Math.PI / 2, 0, 0]}>
+          <ringGeometry args={[2.8, 2.85, 48]} />
+          <meshBasicMaterial color={project.color} transparent opacity={0.25} side={THREE.DoubleSide} />
+        </mesh>
+
+        <pointLight position={[0, 0, 2.5]} intensity={0.8} color={project.color} distance={8} />
+      </group>
+    </Float>
   );
 }

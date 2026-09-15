@@ -77,3 +77,76 @@ canvas {
     transition-duration: 0.01ms !important;
   }
 }
+
+.overlay-ui {
+  perspective: 1200px;
+}
+
+.project-card {
+  will-change: transform, opacity, filter;
+  transition: filter 0.35s ease;
+}
+
+.technical-hud {
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.hud-corner {
+  position: absolute;
+  width: 42px;
+  height: 42px;
+  border-color: rgba(0, 229, 255, 0.35);
+  border-style: solid;
+}
+
+.hud-corner-tl {
+  top: 72px;
+  left: 20px;
+  border-width: 1px 0 0 1px;
+}
+
+.hud-corner-tr {
+  top: 72px;
+  right: 20px;
+  border-width: 1px 1px 0 0;
+}
+
+.hud-corner-bl {
+  bottom: 24px;
+  left: 20px;
+  border-width: 0 0 1px 1px;
+}
+
+.hud-corner-br {
+  bottom: 24px;
+  right: 20px;
+  border-width: 0 1px 1px 0;
+}
+
+.hud-scanline {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 229, 255, 0.015) 2px,
+    rgba(0, 229, 255, 0.015) 4px
+  );
+  opacity: 0.35;
+  animation: hudScan 8s linear infinite;
+}
+
+@keyframes hudScan {
+  from {
+    transform: translateY(-8%);
+  }
+  to {
+    transform: translateY(8%);
+  }
+}
+
+.hud-status {
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+}
