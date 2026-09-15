@@ -4,10 +4,8 @@ import { useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
-import { computeVirusCatchBlend, computeVirusPath } from "@/lib/animation/virusPath";
-import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { rangeProgress } from "@/lib/scroll/timeline";
+import { exclusiveOpacity, SECTION } from "@/lib/scroll/timeline";
 
 interface VirusMascotProps {
   targetPosition: THREE.Vector3 | null;
@@ -15,7 +13,7 @@ interface VirusMascotProps {
   positionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
-const VIRUS_SCALE = 0.022;
+const VIRUS_SCALE = 0.009;
 
 export default function VirusMascot({
   targetPosition,
@@ -48,36 +46,44 @@ export default function VirusMascot({
 
     const p = scrollEngine.progress;
     const t = state.clock.elapsedTime;
-    const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-    const aboutActive = rangeProgress(p, finalStart - 0.03, finalStart + 0.08);
-    const catching = Boolean(targetPosition && aboutActive > 0.45);
+    const contactVis = exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04);
 
-    const path = computeVirusPath(t);
-    const local = new THREE.Vector3(path.x, path.y, path.z);
+    if (contactVis < 0.02) {
+      groupRef.current.visible = false;
+      return;
+    }
+
+    groupRef.current.visible = true;
+    const catching = Boolean(targetPosition && contactVis > 0.5);
+
+    const orbitX = Math.sin(t * 0.7) * 1.2;
+    const orbitY = 0.2 + Math.sin(t * 0.9) * 0.15;
+    const orbitZ = -3.8 + Math.cos(t * 0.5) * 0.3;
+
+    const local = new THREE.Vector3(orbitX, orbitY, orbitZ);
     local.applyQuaternion(camera.quaternion);
     local.add(camera.position);
 
     if (catching && targetPosition) {
       currentPos.current.lerp(targetPosition, 0.1);
     } else {
-      currentPos.current.lerp(local, 0.08);
+      currentPos.current.lerp(local, 0.06);
     }
 
     groupRef.current.position.copy(currentPos.current);
     if (positionRef) positionRef.current.copy(currentPos.current);
 
     groupRef.current.quaternion.copy(camera.quaternion);
-    bodyRef.current.rotation.y = path.rotY + computeVirusCatchBlend(t, catching);
-    bodyRef.current.rotation.z = path.rotZ;
+    bodyRef.current.rotation.y = t * 1.1;
+    bodyRef.current.rotation.z = Math.sin(t * 1.4) * 0.12;
 
-    const alpha = 0.55 + aboutActive * 0.45;
     groupRef.current.scale.setScalar(
-      VIRUS_SCALE * alpha * (1 + catchPulse * 0.12)
+      VIRUS_SCALE * contactVis * (1 + catchPulse * 0.15)
     );
   });
 
   return (
-    <group ref={groupRef}>
+    <group ref={groupRef} visible={false}>
       <group ref={bodyRef}>
         <primitive object={frontModel} />
         <group rotation={[0, Math.PI, 0]}>

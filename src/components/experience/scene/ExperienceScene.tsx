@@ -10,6 +10,7 @@ import { rangeProgress } from "@/lib/scroll/timeline";
 import Atmosphere from "./Atmosphere";
 import CameraRig from "./CameraRig";
 import CityWorld from "./CityWorld";
+import CloudSky from "./CloudSky";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot from "./VirusMascot";
 import FruitSystem, { screenToWorld, type Fruit } from "./FruitSystem";
@@ -34,7 +35,7 @@ export default function ExperienceScene() {
     (clientX: number, clientY: number) => {
       const p = scrollEngine.progress;
       const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-      if (rangeProgress(p, finalStart, finalStart + 0.12) < 0.5) return;
+      if (rangeProgress(p, finalStart, finalStart + 0.1) < 0.5) return;
 
       const worldPos = screenToWorld(clientX, clientY, camera, size.width, size.height);
       const id = fruitIdRef.current++;
@@ -68,12 +69,13 @@ export default function ExperienceScene() {
       <Atmosphere />
       <CameraRig />
 
-      <ambientLight intensity={0.28} />
-      <directionalLight position={[5, 10, 4]} intensity={0.75} color="#F4F1EA" castShadow />
-      <directionalLight position={[-6, 3, -12]} intensity={0.35} color="#00E5FF" />
-      <hemisphereLight args={["#1a3040", "#06080B", 0.35]} />
+      <ambientLight intensity={0.45} />
+      <directionalLight position={[5, 12, 6]} intensity={0.85} color="#ffffff" castShadow />
+      <directionalLight position={[-4, 4, -8]} intensity={0.3} color="#6eb5e8" />
+      <hemisphereLight args={["#87ceeb", "#1a2a20", 0.5]} />
 
       <Suspense fallback={null}>
+        <CloudSky />
         <CityWorld />
 
         {PORTFOLIO_CONFIG.projects.map((project, i) => (
@@ -105,7 +107,7 @@ export default function ExperienceScene() {
         onPointerDown={(e) => {
           const p = scrollEngine.progress;
           const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-          if (rangeProgress(p, finalStart, finalStart + 0.12) > 0.5) {
+          if (rangeProgress(p, finalStart, finalStart + 0.1) > 0.5) {
             spawnFruit(e.clientX, e.clientY);
           }
         }}

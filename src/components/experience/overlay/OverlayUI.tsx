@@ -252,7 +252,7 @@ export default function OverlayUI() {
             {content.aboutText}
           </p>
           <p className="mt-10 font-mono text-[11px] text-[#39ff14]/35">
-            (Click to feed the virus)
+            Scroll to explore the city below.
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
             {skills.programming.slice(0, 6).map((s) => (
@@ -273,6 +273,7 @@ export default function OverlayUI() {
           {content.contactHeading}
         </h2>
         <p className="mt-6 max-w-md text-sm opacity-75">{content.contactText}</p>
+        <p className="mt-4 font-mono text-[10px] opacity-60">(Click to feed the virus)</p>
         <div className="pointer-events-auto mt-12 flex flex-col items-center gap-4">
           <a
             href={`mailto:${person.email}`}

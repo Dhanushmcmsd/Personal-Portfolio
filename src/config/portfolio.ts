@@ -33,7 +33,7 @@ export const PORTFOLIO_CONFIG = {
   interaction: {
     enableFinalVirusFruitInteraction: true,
     finalOnly: true,
-    finalSceneStart: 0.74,
+    finalSceneStart: 0.88,
   },
 
   content: {

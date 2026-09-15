@@ -29,7 +29,7 @@ export const SECTION = {
 
 export const NAV_TARGETS: Record<string, number> = {
   work: TIMELINE.vigilance,
-  about: TIMELINE.about,
+  about: 0,
   experience: TIMELINE.experience,
   contact: TIMELINE.contact,
 };
@@ -42,9 +42,9 @@ export interface CameraKeyframe {
 }
 
 export const CAMERA_KEYFRAMES: CameraKeyframe[] = [
-  { t: 0, position: new THREE.Vector3(0, 1.5, 15), lookAt: new THREE.Vector3(0, 0.4, 0), fov: 52 },
-  { t: 0.06, position: new THREE.Vector3(0.1, 1.1, 9), lookAt: new THREE.Vector3(0, 0.2, -5), fov: 48 },
-  { t: 0.12, position: new THREE.Vector3(0.3, 0.75, 0), lookAt: new THREE.Vector3(0, 0.1, -12), fov: 44 },
+  { t: 0, position: new THREE.Vector3(0, 2.2, 14), lookAt: new THREE.Vector3(0, 1.5, -2), fov: 54 },
+  { t: 0.05, position: new THREE.Vector3(0.1, 1.6, 10), lookAt: new THREE.Vector3(0, 0.8, -4), fov: 50 },
+  { t: 0.1, position: new THREE.Vector3(0.2, 0.9, 4), lookAt: new THREE.Vector3(0, 0.2, -10), fov: 46 },
   { t: 0.18, position: new THREE.Vector3(0, 0.5, -10), lookAt: new THREE.Vector3(0, 0.06, -18), fov: 42 },
   { t: 0.24, position: new THREE.Vector3(-0.4, 0.45, -20), lookAt: new THREE.Vector3(0.1, 0.06, -30), fov: 40 },
   { t: 0.3, position: new THREE.Vector3(0.3, 0.42, -28), lookAt: new THREE.Vector3(-0.1, 0.05, -38), fov: 38 },
@@ -179,7 +179,12 @@ export function computeScrollOverlayTransform(local: number, side: -1 | 1, visib
   };
 }
 
-/** 0 = green glitch city, 1 = white fade at experience and beyond */
+/** 0 = clouds only, 1 = full cyber city visible (hero → work transition) */
+export function getCloudCityBlend(progress: number) {
+  return smootherstep(TIMELINE.hero, TIMELINE.vigilance + 0.02, progress);
+}
+
+/** 0 = green cyber apartments, 1 = white apartments (last project → experience) */
 export function getCityWhiteBlend(progress: number) {
-  return rangeProgress(progress, SECTION.experience[0], SECTION.about[0] + 0.06);
+  return smootherstep(SECTION.python[1] - 0.04, SECTION.experience[0] + 0.04, progress);
 }

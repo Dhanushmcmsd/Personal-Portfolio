@@ -4,47 +4,47 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getCityWhiteBlend } from "@/lib/scroll/timeline";
+import { getCloudCityBlend, getCityWhiteBlend } from "@/lib/scroll/timeline";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
 
-const GREEN = {
-  building: new THREE.Color("#081208"),
+const CYBER_GREEN = {
+  building: new THREE.Color("#0a1208"),
   emissive: new THREE.Color("#39ff14"),
   wire: new THREE.Color("#39ff14"),
+  floor: new THREE.Color("#081008"),
   grid: new THREE.Color("#39ff14"),
-  grass: new THREE.Color("#1a3318"),
   fog: new THREE.Color("#39ff14"),
 };
 
-const WHITE = {
-  building: new THREE.Color("#e8e8e8"),
+const CYBER_WHITE = {
+  building: new THREE.Color("#ececec"),
   emissive: new THREE.Color("#ffffff"),
-  wire: new THREE.Color("#cccccc"),
-  grid: new THREE.Color("#d0d0d0"),
-  grass: new THREE.Color("#f4f4f4"),
+  wire: new THREE.Color("#ffffff"),
+  floor: new THREE.Color("#f2f4f8"),
+  grid: new THREE.Color("#d8dce6"),
   fog: new THREE.Color("#ffffff"),
 };
 
-function makeGlitchWindowTexture(whiteBlend: number) {
+function makeWindowTexture(isWhite: boolean) {
   const canvas = document.createElement("canvas");
   canvas.width = 64;
   canvas.height = 128;
   const ctx = canvas.getContext("2d")!;
-  ctx.fillStyle = whiteBlend > 0.5 ? "#e8e8e8" : "#020804";
+  ctx.fillStyle = isWhite ? "#e0e0e0" : "#020804";
   ctx.fillRect(0, 0, 64, 128);
-  for (let y = 0; y < 8; y++) {
+  for (let y = 0; y < 10; y++) {
     for (let x = 0; x < 4; x++) {
-      const on = Math.random() > 0.34;
-      if (whiteBlend > 0.5) {
-        ctx.fillStyle = on ? `rgba(255,255,255,${0.7 + Math.random() * 0.3})` : "#d8d8d8";
+      const on = Math.random() > (isWhite ? 0.25 : 0.32);
+      if (isWhite) {
+        ctx.fillStyle = on ? `rgba(255,255,255,${0.85 + Math.random() * 0.15})` : "#d5d5d5";
       } else {
         ctx.fillStyle = on
           ? `rgba(${30 + Math.random() * 40}, ${220 + Math.random() * 35}, ${40 + Math.random() * 30}, 0.95)`
           : "#010603";
       }
-      ctx.fillRect(4 + x * 15, 6 + y * 15, 10, 10);
+      ctx.fillRect(4 + x * 15, 4 + y * 12, 10, 8);
     }
   }
   const tex = new THREE.CanvasTexture(canvas);
@@ -67,19 +67,19 @@ type BuildingData = {
 function generateSegment(offsetZ: number): BuildingData[] {
   const buildings: BuildingData[] = [];
   let i = 0;
-  for (let z = 16; z > -SEGMENT + 8; z -= 3.2) {
+  for (let z = 16; z > -SEGMENT + 8; z -= 3) {
     for (const side of [-1, 1] as const) {
-      const stagger = ((i * 19) % 7) * 0.26;
-      const x = side * (7.8 + stagger + (i % 3) * 0.35);
-      const h = 3.2 + ((i * 11) % 18) * 0.58;
+      const stagger = ((i * 17) % 7) * 0.3;
+      const x = side * (7.5 + stagger + (i % 4) * 0.4);
+      const h = 3.8 + ((i * 13) % 20) * 0.65;
       buildings.push({
         x,
-        y: h / 2 - 2.15,
-        z: z + offsetZ + ((i % 4) - 1.5) * 0.3,
-        sx: 2.1 + (i % 5) * 0.26,
+        y: h / 2 - 2.1,
+        z: z + offsetZ + ((i % 3) - 1) * 0.35,
+        sx: 2.2 + (i % 5) * 0.3,
         sy: h,
-        sz: 2.4 + (i % 4) * 0.22,
-        ry: side * 0.035,
+        sz: 2.5 + (i % 4) * 0.25,
+        ry: side * 0.03,
       });
       i++;
     }
@@ -98,11 +98,10 @@ export default function CityWorld() {
   const wireRef = useRef<THREE.InstancedMesh>(null);
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
-  const gridWideRef = useRef<THREE.Mesh>(null);
+  const floorRef = useRef<THREE.Mesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const blendRef = useRef(0);
 
-  const { buildings, windowTex } = useMemo(() => {
+  const { buildings, greenWindowTex, whiteWindowTex } = useMemo(() => {
     const segments = 4;
     const all: BuildingData[] = [];
     for (let s = 0; s < segments; s++) {
@@ -110,56 +109,50 @@ export default function CityWorld() {
     }
     return {
       buildings: all,
-      windowTex: makeGlitchWindowTexture(0),
+      greenWindowTex: makeWindowTexture(false),
+      whiteWindowTex: makeWindowTexture(true),
     };
   }, []);
 
   const buildingMat = useRef(
     new THREE.MeshStandardMaterial({
-      color: GREEN.building,
-      emissive: GREEN.emissive,
-      emissiveIntensity: 0.85,
-      roughness: 0.82,
-      metalness: 0.15,
+      color: CYBER_GREEN.building,
+      emissive: CYBER_GREEN.emissive,
+      emissiveIntensity: 0.9,
+      roughness: 0.75,
+      metalness: 0.2,
     })
   );
   const wireMat = useRef(
     new THREE.MeshBasicMaterial({
-      color: GREEN.wire,
+      color: CYBER_GREEN.wire,
       wireframe: true,
       transparent: true,
-      opacity: 0.22,
+      opacity: 0.2,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     })
   );
+  const floorMat = useRef(
+    new THREE.MeshStandardMaterial({
+      color: CYBER_GREEN.floor,
+      roughness: 0.35,
+      metalness: 0.65,
+    })
+  );
   const gridMat = useRef(
     new THREE.MeshBasicMaterial({
-      color: GREEN.grid,
+      color: CYBER_GREEN.grid,
       wireframe: true,
       transparent: true,
-      opacity: 0.14,
-    })
-  );
-  const gridWideMat = useRef(
-    new THREE.MeshBasicMaterial({
-      color: GREEN.grid,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.05,
-    })
-  );
-  const grassMat = useRef(
-    new THREE.MeshStandardMaterial({
-      color: GREEN.grass,
-      roughness: 0.96,
+      opacity: 0.16,
     })
   );
   const smokeMat = useRef(
     new THREE.MeshBasicMaterial({
-      color: GREEN.fog,
+      color: CYBER_GREEN.fog,
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.08,
       depthWrite: false,
       blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
@@ -167,25 +160,9 @@ export default function CityWorld() {
   );
 
   useEffect(() => {
-    buildingMat.current.emissiveMap = windowTex;
+    buildingMat.current.emissiveMap = greenWindowTex;
     buildingMat.current.needsUpdate = true;
-  }, [windowTex]);
-
-  useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    loader.load("/textures/grass.jpg", (tex) => {
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(40, 160);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      grassMat.current.map = tex;
-      grassMat.current.needsUpdate = true;
-    });
-    loader.load("/textures/smoke.png", (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      smokeMat.current.map = tex;
-      smokeMat.current.needsUpdate = true;
-    });
-  }, []);
+  }, [greenWindowTex]);
 
   useEffect(() => {
     if (!buildingsRef.current || !wireRef.current) return;
@@ -201,6 +178,15 @@ export default function CityWorld() {
     wireRef.current.instanceMatrix.needsUpdate = true;
   }, [buildings, dummy]);
 
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    loader.load("/textures/smoke.png", (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      smokeMat.current.map = tex;
+      smokeMat.current.needsUpdate = true;
+    });
+  }, []);
+
   const { scene } = useThree();
 
   useFrame((state) => {
@@ -208,12 +194,15 @@ export default function CityWorld() {
     const t = state.clock.elapsedTime;
     const travel = p * TRAVEL_MAX;
     const loopOffset = travel % SEGMENT;
-    const blend = getCityWhiteBlend(p);
-    blendRef.current = blend;
+    const cityReveal = getCloudCityBlend(p);
+    const whiteBlend = getCityWhiteBlend(p);
 
     if (worldRef.current) {
       worldRef.current.position.z = -travel + loopOffset;
-      worldRef.current.position.x = Math.sin(p * Math.PI * 1.5) * 0.28;
+      worldRef.current.position.x = Math.sin(p * Math.PI * 1.5) * 0.25;
+      worldRef.current.position.y = -6 + cityReveal * 6;
+      worldRef.current.scale.setScalar(0.4 + cityReveal * 0.6);
+      worldRef.current.visible = cityReveal > 0.02;
     }
 
     if (gridRef.current) {
@@ -222,43 +211,39 @@ export default function CityWorld() {
 
     if (fogRef.current) {
       fogRef.current.children.forEach((child, i) => {
-        child.position.y = 1 + Math.sin(t * 0.28 + i * 0.6) * 0.35;
-        child.position.x = Math.sin(t * 0.07 + i) * 1.4;
+        child.position.y = 0.8 + Math.sin(t * 0.25 + i * 0.6) * 0.3;
       });
     }
 
-    lerpColor(buildingMat.current.color, GREEN.building, WHITE.building, blend);
-    lerpColor(buildingMat.current.emissive, GREEN.emissive, WHITE.emissive, blend);
-    buildingMat.current.emissiveIntensity = 0.85 * (1 - blend * 0.5) + blend * 0.15;
-    if (blend < 0.85) {
-      buildingMat.current.emissiveMap = windowTex;
-    } else {
-      buildingMat.current.emissiveMap = null;
-    }
+    lerpColor(buildingMat.current.color, CYBER_GREEN.building, CYBER_WHITE.building, whiteBlend);
+    lerpColor(buildingMat.current.emissive, CYBER_GREEN.emissive, CYBER_WHITE.emissive, whiteBlend);
+    buildingMat.current.emissiveIntensity = 0.9 * (1 - whiteBlend * 0.4) + whiteBlend * 0.35;
+    buildingMat.current.emissiveMap = whiteBlend > 0.5 ? whiteWindowTex : greenWindowTex;
+    buildingMat.current.metalness = 0.2 + whiteBlend * 0.45;
+    buildingMat.current.roughness = 0.75 * (1 - whiteBlend * 0.5);
 
-    lerpColor(wireMat.current.color, GREEN.wire, WHITE.wire, blend);
-    wireMat.current.opacity = 0.22 * (1 - blend) + 0.08 * blend;
+    lerpColor(wireMat.current.color, CYBER_GREEN.wire, CYBER_WHITE.wire, whiteBlend);
+    wireMat.current.opacity = 0.2 * (1 - whiteBlend) + 0.12 * whiteBlend;
 
-    lerpColor(gridMat.current.color, GREEN.grid, WHITE.grid, blend);
-    gridMat.current.opacity = 0.14 * (1 - blend) + 0.06 * blend;
+    lerpColor(floorMat.current.color, CYBER_GREEN.floor, CYBER_WHITE.floor, whiteBlend);
+    floorMat.current.metalness = 0.65 + whiteBlend * 0.25;
+    floorMat.current.roughness = 0.35 * (1 - whiteBlend * 0.6);
 
-    lerpColor(gridWideMat.current.color, GREEN.grid, WHITE.grid, blend);
-    gridWideMat.current.opacity = 0.05 * (1 - blend) + 0.03 * blend;
+    lerpColor(gridMat.current.color, CYBER_GREEN.grid, CYBER_WHITE.grid, whiteBlend);
+    gridMat.current.opacity = 0.16 * (1 - whiteBlend) + 0.1 * whiteBlend;
 
-    lerpColor(grassMat.current.color, GREEN.grass, WHITE.grass, blend);
-
-    lerpColor(smokeMat.current.color, GREEN.fog, WHITE.fog, blend);
-    smokeMat.current.opacity = 0.1 * (1 - blend) + 0.06 * blend;
+    lerpColor(smokeMat.current.color, CYBER_GREEN.fog, CYBER_WHITE.fog, whiteBlend);
+    smokeMat.current.opacity = 0.08 * (1 - whiteBlend) + 0.04 * whiteBlend;
 
     if (scene.fog && scene.fog instanceof THREE.Fog) {
-      lerpColor(scene.fog.color, new THREE.Color("#041208"), new THREE.Color("#f0f0f0"), blend);
-    }
-    if (scene.background instanceof THREE.Color) {
-      lerpColor(scene.background, new THREE.Color("#030504"), new THREE.Color("#f5f5f5"), blend);
+      const fogGreen = new THREE.Color("#87b8d8");
+      const fogWhite = new THREE.Color("#eef2f8");
+      lerpColor(scene.fog.color, fogGreen, fogWhite, whiteBlend);
     }
 
     if (typeof document !== "undefined") {
-      document.documentElement.style.setProperty("--city-white-blend", String(blend));
+      document.documentElement.style.setProperty("--city-white-blend", String(whiteBlend));
+      document.documentElement.style.setProperty("--city-reveal-blend", String(cityReveal));
     }
   });
 
@@ -276,26 +261,33 @@ export default function CityWorld() {
         <boxGeometry args={[1.02, 1.02, 1.02]} />
       </instancedMesh>
 
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.28, -60]} receiveShadow material={grassMat.current}>
-        <planeGeometry args={[60, 260]} />
+      <mesh
+        ref={floorRef}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -2.26, -48]}
+        receiveShadow
+        material={floorMat.current}
+      >
+        <planeGeometry args={[56, 260]} />
       </mesh>
 
       <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.24, -30]} material={gridMat.current}>
         <planeGeometry args={[14, 260, 1, 52]} />
       </mesh>
 
-      <mesh ref={gridWideRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.22, -30]} material={gridWideMat.current}>
-        <planeGeometry args={[60, 260, 1, 20]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.23, -30]}>
+        <planeGeometry args={[56, 260, 1, 24]} />
+        <meshBasicMaterial color="#ffffff" wireframe transparent opacity={0.04} />
       </mesh>
 
       <group ref={fogRef}>
-        {Array.from({ length: 16 }).map((_, i) => (
+        {Array.from({ length: 12 }).map((_, i) => (
           <mesh
             key={`fog-${i}`}
-            position={[((i % 2) * 2 - 1) * 6, 1.1, 8 - i * 5.5]}
+            position={[((i % 2) * 2 - 1) * 5.5, 0.9, 6 - i * 5.5]}
             material={smokeMat.current}
           >
-            <planeGeometry args={[10, 4.5]} />
+            <planeGeometry args={[9, 3.5]} />
           </mesh>
         ))}
       </group>

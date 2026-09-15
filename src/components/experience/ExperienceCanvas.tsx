@@ -40,7 +40,7 @@ export default function ExperienceCanvas() {
         }}
         dpr={[1, dpr]}
         onCreated={({ gl }) => {
-          gl.setClearColor("#06080B", 1);
+          gl.setClearColor("#6eb5e8", 1);
         }}
         onError={() => setWebglFailed(true)}
       >
