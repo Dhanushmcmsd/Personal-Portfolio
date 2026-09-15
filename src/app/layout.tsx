@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Archivo_Black, DM_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -16,10 +16,14 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Dhanush Raghav M — Full-Stack AI Engineer",
   description:
-    "Portfolio of Dhanush Raghav M — Full-Stack AI Software Engineer building web, mobile, and ML products end-to-end.",
-  icons: {
-    icon: "/alien-mascot.png",
-  },
+    "Immersive 3D portfolio of Dhanush Raghav M — Full-Stack AI Software Engineer building web, mobile, and ML products end-to-end.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#06080B",
 };
 
 export default function RootLayout({

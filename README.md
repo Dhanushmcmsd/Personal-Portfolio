@@ -1,36 +1,30 @@
-# Personal Portfolio
+# Dhanush Portfolio — Immersive 3D Experience
 
-Portfolio website for **Dhanush Raghav M** — Full-Stack AI Software Engineer.
+Scroll-driven cinematic 3D portfolio for **Dhanush Raghav M**.
 
-## Features
+## Experience
 
-- Minimalist hero with interactive bee (inspired by léoparpeix.com)
-- 3D cyberpunk project gallery (inspired by AMIX Motion Gallery)
-- Smooth scroll with Lenis
-- Cursor spotlight effect
-- Responsive design with Tailwind CSS
+- One continuous 3D world controlled by scroll
+- Camera flies through project exhibits in depth
+- Glitch/teleport transitions between projects
+- Final "WHO I AM" scene with virus mascot + fruit interaction
+- Native-quality interaction patterns (press feedback, bottom sheet, haptics)
 
 ## Tech Stack
 
-- **Next.js 15** (App Router)
-- **TypeScript**
-- **Tailwind CSS 4**
-- **Three.js** + React Three Fiber
-- **Framer Motion**
+- Next.js 15 (App Router)
+- React Three Fiber + Three.js
+- GSAP-ready timeline system
+- Zustand (UI state only)
+- Tailwind CSS 4
 
-## Getting Started
+## Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
 ## Deploy
 
-Optimized for [Vercel](https://vercel.com):
-
-```bash
-npm run build
-```
+Linked to Vercel project `dhanush-portfolio`. Push to `main` to deploy.

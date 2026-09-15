@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" fill="none">
+  <rect width="1200" height="720" fill="#0C0A18"/>
+  <rect x="40" y="40" width="1120" height="640" rx="16" fill="#12102A" stroke="#8B5CFF" stroke-width="2" opacity="0.5"/>
+  <text x="80" y="100" fill="#8B5CFF" font-family="system-ui" font-size="28" font-weight="700">HSN / GST CLASSIFICATION</text>
+  <text x="80" y="135" fill="#F4F1EA" font-family="system-ui" font-size="16" opacity="0.6">AI-Powered Product Classification</text>
+  <rect x="80" y="170" width="700" height="50" rx="8" fill="#1A1535" stroke="#8B5CFF44"/>
+  <text x="100" y="202" fill="#F4F1EA55" font-family="system-ui" font-size="14">Search product description...</text>
+  <rect x="80" y="240" width="700" height="200" rx="8" fill="#11102A"/>
+  <text x="100" y="275" fill="#8B5CFF" font-family="monospace" font-size="14">HSN: 84713000</text>
+  <text x="100" y="305" fill="#F4F1EA" font-family="system-ui" font-size="13">Laptop computers  GST 18%</text>
+  <text x="100" y="340" fill="#34D399" font-family="system-ui" font-size="13">Confidence: 94.2%</text>
+  <rect x="100" y="370" width="120" height="28" rx="4" fill="#8B5CFF33"/>
+  <text x="115" y="389" fill="#8B5CFF" font-family="system-ui" font-size="11">FAISS Match</text>
+  <rect x="820" y="170" width="300" height="400" rx="8" fill="#11102A" stroke="#8B5CFF33"/>
+  <text x="840" y="210" fill="#F4F1EA66" font-family="system-ui" font-size="12">14,708 codes indexed</text>
+  <text x="840" y="240" fill="#F4F1EA66" font-family="system-ui" font-size="12">88 chapters</text>
+  <text x="80" y="600" fill="#F4F1EA55" font-family="system-ui" font-size="13">Python · FastAPI · FAISS · Redis · Next.js</text>
+</svg>
