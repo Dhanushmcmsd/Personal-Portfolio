@@ -176,7 +176,7 @@ export default function OverlayUI() {
                 {project.title}
               </h2>
               <p className="glitch-outline mt-1 text-sm text-[#F4F1EA]/60">{project.subtitle}</p>
-              <p className="mt-4 max-w-md text-xs leading-relaxed text-[#F4F1EA]/45">
+              <p className="project-desc-gold mt-4 max-w-md text-xs leading-relaxed">
                 {project.description}
               </p>
               <div
@@ -198,25 +198,25 @@ export default function OverlayUI() {
 
       <div
         ref={experienceRef}
-        className="absolute inset-0 flex items-center px-6 md:px-16"
+        className="section-dark-text absolute inset-0 flex items-center px-6 md:px-16"
         style={{ opacity: 0 }}
       >
         <div className="max-w-3xl">
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#39ff14]/60">
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-70">
             Experience
           </p>
-          <h2 className="glitch-outline mt-4 font-[family-name:var(--font-display)] text-4xl text-[#F4F1EA] md:text-6xl">
+          <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl md:text-6xl">
             WHERE I&apos;VE WORKED
           </h2>
           <div className="mt-12 space-y-10">
             {experience.map((job) => (
-              <div key={job.company + job.role} className="border-l border-[#39ff14]/30 pl-6">
-                <p className="font-mono text-xs text-[#F4F1EA]/40">{job.period}</p>
-                <h3 className="mt-1 text-xl text-[#F4F1EA]">{job.role}</h3>
-                <p className="text-sm text-[#39ff14]">{job.company}</p>
+              <div key={job.company + job.role} className="border-l border-[#722F37]/40 pl-6">
+                <p className="font-mono text-xs opacity-70">{job.period}</p>
+                <h3 className="mt-1 text-xl">{job.role}</h3>
+                <p className="text-sm opacity-85">{job.company}</p>
                 <ul className="mt-3 space-y-2">
                   {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="text-xs leading-relaxed text-[#F4F1EA]/50">
+                    <li key={h} className="text-xs leading-relaxed opacity-75">
                       {h}
                     </li>
                   ))}
@@ -226,10 +226,10 @@ export default function OverlayUI() {
           </div>
           <div className="mt-12 grid gap-4 md:grid-cols-2">
             {education.map((edu) => (
-              <div key={edu.degree} className="rounded-lg border border-white/5 bg-white/5 p-4">
-                <p className="font-mono text-[10px] text-[#F4F1EA]/40">{edu.period}</p>
-                <p className="mt-1 text-sm text-[#F4F1EA]">{edu.degree}</p>
-                <p className="text-xs text-[#F4F1EA]/50">{edu.school}</p>
+              <div key={edu.degree} className="rounded-lg border border-[#722F37]/20 bg-white/40 p-4">
+                <p className="font-mono text-[10px] opacity-70">{edu.period}</p>
+                <p className="mt-1 text-sm">{edu.degree}</p>
+                <p className="text-xs opacity-75">{edu.school}</p>
               </div>
             ))}
           </div>
@@ -266,29 +266,29 @@ export default function OverlayUI() {
 
       <div
         ref={contactRef}
-        className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+        className="section-dark-text absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
         style={{ opacity: 0 }}
       >
-        <h2 className="glitch-outline font-[family-name:var(--font-display)] text-[clamp(2.5rem,8vw,6rem)] leading-none text-[#F4F1EA]">
+        <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,8vw,6rem)] leading-none">
           {content.contactHeading}
         </h2>
-        <p className="mt-6 max-w-md text-sm text-[#F4F1EA]/50">{content.contactText}</p>
+        <p className="mt-6 max-w-md text-sm opacity-75">{content.contactText}</p>
         <div className="pointer-events-auto mt-12 flex flex-col items-center gap-4">
           <a
             href={`mailto:${person.email}`}
-            className="pressable rounded-full border border-[#39ff14]/40 px-8 py-3 font-mono text-xs uppercase tracking-[0.2em] text-[#39ff14] transition-colors hover:border-[#39ff14]"
+            className="pressable rounded-full border border-[#722F37]/50 bg-white/50 px-8 py-3 font-mono text-xs uppercase tracking-[0.2em] transition-colors hover:border-[#722F37]"
           >
             {person.email}
           </a>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-[#F4F1EA]/40">
-            <a href={`tel:${person.phone.replace(/\s/g, "")}`} className="hover:text-[#39ff14]">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs opacity-75">
+            <a href={`tel:${person.phone.replace(/\s/g, "")}`} className="hover:opacity-100">
               {person.phone}
             </a>
             <a
               href={person.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[#39ff14]"
+              className="hover:opacity-100"
             >
               GitHub
             </a>
@@ -296,7 +296,7 @@ export default function OverlayUI() {
               href={person.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-[#39ff14]"
+              className="hover:opacity-100"
             >
               LinkedIn
             </a>

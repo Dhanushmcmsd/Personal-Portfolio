@@ -178,3 +178,8 @@ export function computeScrollOverlayTransform(local: number, side: -1 | 1, visib
     opacity: life,
   };
 }
+
+/** 0 = green glitch city, 1 = white fade at experience and beyond */
+export function getCityWhiteBlend(progress: number) {
+  return rangeProgress(progress, SECTION.experience[0], SECTION.about[0] + 0.06);
+}

@@ -4,9 +4,21 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
+import { getCityWhiteBlend } from "@/lib/scroll/timeline";
 
 export default function Atmosphere() {
   const particlesRef = useRef<THREE.Points>(null);
+  const particleMat = useRef(
+    new THREE.PointsMaterial({
+      size: 0.03,
+      color: "#39ff14",
+      transparent: true,
+      opacity: 0.22,
+      sizeAttenuation: true,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })
+  );
 
   const particles = useMemo(() => {
     const count = 180;
@@ -19,12 +31,18 @@ export default function Atmosphere() {
     return positions;
   }, []);
 
-  useFrame((state) => {
+  useFrame(() => {
     const p = scrollEngine.progress;
+    const blend = getCityWhiteBlend(p);
+
     if (particlesRef.current) {
       particlesRef.current.position.z = -p * 80;
     }
-    void state;
+
+    const green = new THREE.Color("#39ff14");
+    const white = new THREE.Color("#ffffff");
+    particleMat.current.color.copy(green).lerp(white, blend);
+    particleMat.current.opacity = 0.22 * (1 - blend) + 0.08 * blend;
   });
 
   return (
@@ -32,19 +50,10 @@ export default function Atmosphere() {
       <color attach="background" args={["#030504"]} />
       <fog attach="fog" args={["#041208", 5, 42]} />
 
-      <points ref={particlesRef}>
+      <points ref={particlesRef} material={particleMat.current}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[particles, 3]} />
         </bufferGeometry>
-        <pointsMaterial
-          size={0.03}
-          color="#39ff14"
-          transparent
-          opacity={0.22}
-          sizeAttenuation
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
       </points>
     </group>
   );
