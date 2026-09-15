@@ -138,7 +138,6 @@ export default function CityWorld() {
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
   const floorLayersRef = useRef<THREE.Mesh[]>([]);
-  const floorTexturesRef = useRef<THREE.Texture[]>([]);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const fireBandTex = useMemo(() => makeFireBandTexture(), []);
 
@@ -158,10 +157,10 @@ export default function CityWorld() {
   const floorLayerMats = useRef(
     Array.from({ length: FLOOR_LAYER_COUNT }, (_, i) =>
       new THREE.MeshBasicMaterial({
+        color: BLACK_VOID,
         transparent: true,
-        opacity: 0.92 - i * 0.12,
+        opacity: 0.98 - i * 0.06,
         depthWrite: i === 0,
-        color: new THREE.Color("#ffffff"),
       })
     )
   );
@@ -261,22 +260,6 @@ export default function CityWorld() {
 
   useEffect(() => {
     const loader = new THREE.TextureLoader();
-    loader.load("/textures/glitch-floor.jpg", (tex) => {
-      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(2, 24);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      floorTexturesRef.current = Array.from({ length: FLOOR_LAYER_COUNT }, () => {
-        const clone = tex.clone();
-        clone.needsUpdate = true;
-        clone.wrapS = clone.wrapT = THREE.RepeatWrapping;
-        clone.repeat.set(2 + Math.random() * 0.2, 24);
-        return clone;
-      });
-      floorLayerMats.current.forEach((mat, i) => {
-        mat.map = floorTexturesRef.current[i];
-        mat.needsUpdate = true;
-      });
-    });
     loader.load("/textures/smoke.png", (tex) => {
       tex.colorSpace = THREE.SRGBColorSpace;
       smokeMat.current.map = tex;
@@ -320,30 +303,23 @@ export default function CityWorld() {
     }
 
     const floorScroll = (travel * 0.08) % 1;
-    floorTexturesRef.current.forEach((tex, i) => {
-      if (!tex) return;
-      tex.offset.y = floorScroll + i * 0.08;
-    });
     floorLayersRef.current.forEach((mesh, i) => {
-      if (mesh) mesh.position.z = -48 - i * 0.35 - (travel * 0.02) % 2;
+      if (mesh) {
+        mesh.position.z = -48 - i * 0.35 - floorScroll * 2 - (travel * 0.02) % 2;
+      }
     });
 
     floorLayerMats.current.forEach((mat, i) => {
-      const baseOpacity = 0.92 - i * 0.12;
-      mat.opacity = baseOpacity * (1 - blackPhase * 0.92);
-      lerpColor(mat.color, new THREE.Color("#ffffff"), BLACK_VOID, blackPhase);
-      if (blackPhase > 0.85) {
-        mat.map = null;
-      } else if (floorTexturesRef.current[i] && !mat.map) {
-        mat.map = floorTexturesRef.current[i];
-      }
+      mat.color.copy(BLACK_VOID);
+      mat.opacity = (0.98 - i * 0.06) * (0.15 + blackPhase * 0.85);
+      mat.map = null;
       mat.needsUpdate = true;
     });
 
     if (gridRef.current) {
       gridRef.current.position.z = -(travel * 0.35) % 8;
-      gridMat.current.opacity = 0.16 * (1 - blackPhase * 0.9) * (1 - fireProgress * 0.4);
-      lerpColor(gridMat.current.color, CYBER_GREEN.grid, CYBER_WHITE.grid, fireProgress);
+      gridMat.current.opacity = 0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4);
+      lerpColor(gridMat.current.color, CYBER_GREEN.grid, BLACK_VOID, blackPhase);
     }
 
     if (fogRef.current) {
@@ -356,11 +332,8 @@ export default function CityWorld() {
     smokeMat.current.opacity = 0.08 * (1 - fireProgress * 0.5) * (1 - blackPhase * 0.6);
 
     if (scene.fog && scene.fog instanceof THREE.Fog) {
-      const fogGreen = new THREE.Color("#87b8d8");
-      const fogWhite = new THREE.Color("#eef2f8");
-      const fogColor = new THREE.Color().lerpColors(fogGreen, fogWhite, fireProgress);
-      lerpColor(scene.fog.color, fogColor, BLACK_VOID, blackPhase);
-      scene.fog.far = 48 + fireProgress * 20 - blackPhase * 10;
+      lerpColor(scene.fog.color, new THREE.Color("#06080B"), BLACK_VOID, blackPhase);
+      scene.fog.far = 48 + fireProgress * 20;
     }
 
     if (typeof document !== "undefined") {

@@ -1,16 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo_Black, DM_Sans, Fredoka } from "next/font/google";
+import { Archivo_Black, DM_Sans } from "next/font/google";
 import "./globals.css";
 
 const archivo = Archivo_Black({
   weight: "400",
   subsets: ["latin"],
   variable: "--font-display",
-});
-
-const fredoka = Fredoka({
-  subsets: ["latin"],
-  variable: "--font-hero",
 });
 
 const dmSans = DM_Sans({
@@ -37,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${dmSans.variable} ${fredoka.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${dmSans.variable}`}>
       <body className="antialiased">{children}</body>
     </html>
   );

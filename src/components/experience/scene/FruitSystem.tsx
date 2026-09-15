@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
-import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { exclusiveOpacity, rangeProgress, SECTION } from "@/lib/scroll/timeline";
+import { exclusiveOpacity, SECTION } from "@/lib/scroll/timeline";
 import { subtleHaptic } from "@/lib/haptics";
 
 export interface Fruit {
@@ -43,67 +42,87 @@ export default function FruitSystem({
   eatingFruitId,
   eatProgress,
 }: FruitSystemProps) {
+  const groupRefs = useRef<Map<number, THREE.Group>>(new Map());
   const startedEatingRef = useRef<Set<number>>(new Set());
+  const eatingFruitIdRef = useRef<number | null>(null);
+
+  eatingFruitIdRef.current = eatingFruitId;
 
   useFrame((_, delta) => {
     const p = scrollEngine.progress;
-    const contactActive =
-      exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.35;
-    const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-    const inDropZone = rangeProgress(p, finalStart, finalStart + 0.1) > 0.5;
-    const active = contactActive && inDropZone;
+    const active = exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.25;
 
     if (!active) {
       startedEatingRef.current.clear();
     }
 
     for (const fruit of fruits) {
-      if (fruit.eating || fruit.id === eatingFruitId) {
+      const group = groupRefs.current.get(fruit.id);
+
+      if (fruit.eating || fruit.id === eatingFruitIdRef.current) {
         fruit.scale = Math.max(0.05, 1 - eatProgress * 0.95);
+        if (group) {
+          group.position.copy(fruit.position);
+          group.scale.setScalar(fruit.scale);
+        }
         continue;
       }
 
-      if (!active) continue;
+      if (!active) {
+        if (group) group.visible = false;
+        continue;
+      }
 
-      fruit.velocity.y -= 2.5 * delta;
+      if (group) group.visible = true;
+
+      fruit.velocity.y -= 1.2 * delta;
       fruit.position.addScaledVector(fruit.velocity, delta);
       fruit.rotation.x += delta * 2;
       fruit.rotation.z += delta * 1.5;
       fruit.lifetime -= delta;
 
+      if (group) {
+        group.position.copy(fruit.position);
+        group.scale.setScalar(fruit.scale);
+      }
+
       const dist = fruit.position.distanceTo(virusPositionRef.current);
-      if (dist < 0.38 && !startedEatingRef.current.has(fruit.id) && eatingFruitId === null) {
+      if (
+        dist < 0.65 &&
+        !startedEatingRef.current.has(fruit.id) &&
+        eatingFruitIdRef.current === null
+      ) {
         startedEatingRef.current.add(fruit.id);
         fruit.velocity.set(0, 0, 0);
         subtleHaptic(6);
         onEatStart(fruit);
       }
 
-      if (fruit.lifetime <= 0 || fruit.position.y < -3) {
+      if (fruit.lifetime <= 0) {
         onCatch(fruit.id);
       }
     }
   });
 
-  const visibleFruits = useMemo(
-    () => fruits.filter((f) => f.scale > 0.04),
-    [fruits, eatProgress, eatingFruitId]
-  );
-
   return (
     <group>
-      {visibleFruits.map((fruit) => (
-        <group key={fruit.id} position={fruit.position}>
+      {fruits.map((fruit) => (
+        <group
+          key={fruit.id}
+          ref={(el) => {
+            if (el) groupRefs.current.set(fruit.id, el);
+            else groupRefs.current.delete(fruit.id);
+          }}
+        >
           <Html
             center
-            distanceFactor={14}
+            distanceFactor={18}
             style={{
-              fontSize: "13px",
+              fontSize: "11px",
               lineHeight: 1,
               pointerEvents: "none",
               userSelect: "none",
-              transform: `scale(${fruit.scale})`,
-              opacity: fruit.eating ? 1 - eatProgress : 1,
+              opacity: fruit.eating ? Math.max(0, 1 - eatProgress) : 1,
             }}
           >
             {fruit.emoji}
@@ -120,15 +139,13 @@ export function screenToWorld(
   camera: THREE.Camera,
   width: number,
   height: number,
-  depth = -71
+  distance = 4.2
 ): THREE.Vector3 {
-  const ndc = new THREE.Vector3(
+  const ndc = new THREE.Vector2(
     (clientX / width) * 2 - 1,
-    -(clientY / height) * 2 + 1,
-    0.5
+    -(clientY / height) * 2 + 1
   );
-  ndc.unproject(camera);
-  const dir = ndc.sub(camera.position).normalize();
-  const dist = (depth - camera.position.z) / dir.z;
-  return camera.position.clone().add(dir.multiplyScalar(dist));
+  const raycaster = new THREE.Raycaster();
+  raycaster.setFromCamera(ndc, camera);
+  return raycaster.ray.at(distance, new THREE.Vector3());
 }

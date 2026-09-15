@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties } from "react";
 import { PORTFOLIO_CONFIG } from "@/config/portfolio";
+import { useExperienceStore } from "@/stores/experienceStore";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import {
   computeScrollOverlayTransform,
@@ -155,19 +156,29 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="hero-glitch-text font-mono text-[10px] uppercase tracking-[0.35em] opacity-80">
+        <p className="hero-glitch-text text-[10px] tracking-[0.35em] opacity-80" data-text={hero.eyebrow}>
           {hero.eyebrow}
         </p>
-        <h1 className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2.2rem,7vw,5.8rem)] leading-[0.92] tracking-tight">
+        <h1
+          className="hero-glitch-text mt-6 max-w-5xl text-[clamp(2rem,6.5vw,5rem)] leading-[0.92]"
+          data-text={person.displayName}
+        >
           {person.displayName.split(" ").map((word) => (
             <span key={word} className="block">
               {word}
             </span>
           ))}
         </h1>
-        <p className="hero-glitch-text mt-8 max-w-xl text-lg md:text-xl">{hero.title}</p>
-        <p className="hero-glitch-text mt-4 max-w-lg text-sm opacity-90">{hero.subtitle}</p>
-        <p className="hero-glitch-text mt-16 font-mono text-[10px] uppercase tracking-[0.3em] opacity-60">
+        <p className="hero-glitch-text mt-8 max-w-xl text-base md:text-lg" data-text={hero.title}>
+          {hero.title}
+        </p>
+        <p className="hero-glitch-text mt-4 max-w-lg text-xs md:text-sm opacity-90" data-text={hero.subtitle}>
+          {hero.subtitle}
+        </p>
+        <p
+          className="hero-glitch-text mt-16 text-[10px] tracking-[0.3em] opacity-60"
+          data-text={`${hero.scrollLabel} ↓`}
+        >
           {hero.scrollLabel} ↓
         </p>
       </div>
@@ -299,6 +310,12 @@ export default function OverlayUI() {
         ref={contactRef}
         className="section-dark-text absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
         style={{ opacity: 0 }}
+        onClick={(e) => {
+          const opacity = Number(contactRef.current?.style.opacity ?? 0);
+          if (opacity > 0.35 && !(e.target as HTMLElement).closest("a")) {
+            useExperienceStore.getState().queueFruitDrop(e.clientX, e.clientY);
+          }
+        }}
       >
         <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,8vw,6rem)] leading-none">
           {content.contactHeading}

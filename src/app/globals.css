@@ -7,6 +7,15 @@
   --color-accent-secondary: #8B5CFF;
   --font-display: "Archivo Black", sans-serif;
   --font-body: "DM Sans", sans-serif;
+  --font-hero: "Aalto Display", sans-serif;
+}
+
+@font-face {
+  font-family: "Aalto Display";
+  src: url("/fonts/aalto-display.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 *,
@@ -192,72 +201,120 @@ canvas {
   color: #722f37;
 }
 
-.hero-cloud-text {
-  font-family: var(--font-hero), "Fredoka", sans-serif;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: 0.02em;
-  -webkit-text-stroke: 2px #ffffff;
-  paint-order: stroke fill;
-  text-shadow:
-    0 0 0 4px rgba(255, 255, 255, 0.95),
-    0 3px 0 rgba(255, 255, 255, 0.55),
-    0 6px 0 rgba(200, 225, 245, 0.35),
-    0 0 24px rgba(255, 255, 255, 0.25);
-}
-
 .hero-glitch-text {
-  font-family: var(--font-hero), "Fredoka", sans-serif;
-  font-weight: 700;
+  position: relative;
+  font-family: var(--font-hero), "Aalto Display", sans-serif;
+  font-weight: 400;
   color: #39ff14;
-  letter-spacing: 0.02em;
-  -webkit-text-stroke: 1px rgba(57, 255, 20, 0.55);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 0.5px rgba(57, 255, 20, 0.35);
   paint-order: stroke fill;
   text-shadow:
-    -2px 0 rgba(57, 255, 20, 0.65),
-    2px 0 rgba(0, 229, 255, 0.35),
-    0 0 14px rgba(57, 255, 20, 0.35);
-  animation: heroTextGlitch 2.8s steps(2, end) infinite;
+    0 0 8px rgba(57, 255, 20, 0.35),
+    0 0 18px rgba(57, 255, 20, 0.15);
+  animation: heroHackerGlitch 3.2s steps(1, end) infinite;
 }
 
-@keyframes heroTextGlitch {
+.hero-glitch-text::before,
+.hero-glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.hero-glitch-text::before {
+  color: rgba(0, 229, 255, 0.55);
+  clip-path: inset(0 0 58% 0);
+  transform: translate(-1px, 0);
+  animation: heroGlitchSliceA 3.2s steps(1, end) infinite;
+}
+
+.hero-glitch-text::after {
+  color: rgba(57, 255, 20, 0.45);
+  clip-path: inset(42% 0 0 0);
+  transform: translate(1px, 0);
+  animation: heroGlitchSliceB 3.2s steps(1, end) infinite;
+}
+
+@keyframes heroHackerGlitch {
   0%,
   100% {
     transform: translate(0);
+    filter: none;
+  }
+  7% {
+    transform: translate(-2px, 1px);
+    filter: hue-rotate(8deg);
+  }
+  14% {
+    transform: translate(2px, -1px);
+  }
+  21% {
+    transform: translate(-1px, 0);
     text-shadow:
-      -2px 0 rgba(57, 255, 20, 0.65),
-      2px 0 rgba(0, 229, 255, 0.35),
-      0 0 14px rgba(57, 255, 20, 0.35);
+      -3px 0 rgba(57, 255, 20, 0.7),
+      3px 0 rgba(0, 229, 255, 0.45),
+      0 0 20px rgba(57, 255, 20, 0.35);
   }
-  20% {
-    transform: translate(-1px, 0.5px);
-    text-shadow:
-      2px 0 rgba(57, 255, 20, 0.75),
-      -3px 0 rgba(0, 229, 255, 0.45),
-      0 0 18px rgba(57, 255, 20, 0.45);
+  28% {
+    transform: translate(1px, 1px);
   }
-  40% {
-    transform: translate(1px, -0.5px);
+  42% {
+    transform: translate(0);
   }
-  60% {
-    transform: translate(-0.5px, 1px);
-    text-shadow:
-      -3px 0 rgba(57, 255, 20, 0.8),
-      1px 0 rgba(0, 229, 255, 0.5),
-      0 0 10px rgba(57, 255, 20, 0.25);
+  63% {
+    transform: translate(-1px, -1px);
+    filter: contrast(1.15);
   }
-  80% {
-    transform: translate(0.5px, 0);
+  78% {
+    transform: translate(1px, 0);
   }
 }
 
-.hero-cloud-sub {
-  font-family: var(--font-hero), "Fredoka", sans-serif;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.92);
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85);
-  paint-order: stroke fill;
-  text-shadow: 0 2px 8px rgba(110, 181, 232, 0.35);
+@keyframes heroGlitchSliceA {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  7%,
+  11% {
+    opacity: 0.85;
+    transform: translate(-3px, -1px);
+  }
+  21%,
+  24% {
+    opacity: 0.65;
+    transform: translate(2px, 0);
+  }
+  63%,
+  66% {
+    opacity: 0.75;
+    transform: translate(-2px, 1px);
+  }
+}
+
+@keyframes heroGlitchSliceB {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  9%,
+  13% {
+    opacity: 0.8;
+    transform: translate(3px, 1px);
+  }
+  24%,
+  27% {
+    opacity: 0.6;
+    transform: translate(-2px, 0);
+  }
+  65%,
+  68% {
+    opacity: 0.7;
+    transform: translate(2px, -1px);
+  }
 }
 
 .section-about-text,

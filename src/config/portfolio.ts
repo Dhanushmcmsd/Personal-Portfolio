@@ -10,7 +10,7 @@ export const PORTFOLIO_CONFIG = {
     phone: "+91 98941 25266",
     github: "https://github.com/Dhanushmcmsd",
     linkedin: "https://www.linkedin.com/in/dhanushraghav",
-    photo: "/profile/dhanush.jpg",
+    photo: "/profile/dhanush.png",
   },
 
   hero: {

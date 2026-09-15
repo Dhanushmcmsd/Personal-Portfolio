@@ -6,11 +6,12 @@ import * as THREE from "three";
 import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { useExperienceStore } from "@/stores/experienceStore";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { exclusiveOpacity, rangeProgress, SECTION } from "@/lib/scroll/timeline";
+import { exclusiveOpacity, SECTION } from "@/lib/scroll/timeline";
 import Atmosphere from "./Atmosphere";
 import CameraRig from "./CameraRig";
 import CityWorld from "./CityWorld";
 import CloudSky from "./CloudSky";
+import HotAirBalloon from "./HotAirBalloon";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot, { EAT_DURATION_MS, type EatTarget } from "./VirusMascot";
 import FruitSystem, { randomFruitEmoji, screenToWorld, type Fruit } from "./FruitSystem";
@@ -32,16 +33,15 @@ export default function ExperienceScene() {
   const eatPositionRef = useRef<THREE.Vector3 | null>(null);
   const virusPositionRef = useRef(new THREE.Vector3(0, 0.5, -8));
   const fruitIdRef = useRef(0);
+  const eatingFruitIdRef = useRef<number | null>(null);
   const { camera, size } = useThree();
 
-  const spawnFruit = useCallback(
+  const spawnFruitAt = useCallback(
     (clientX: number, clientY: number) => {
       const p = scrollEngine.progress;
       const contactActive =
-        exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.35;
-      const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-      if (!contactActive || rangeProgress(p, finalStart, finalStart + 0.1) < 0.5) return;
-      if (eatingFruitId !== null) return;
+        exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.25;
+      if (!contactActive || eatingFruitIdRef.current !== null) return;
 
       const worldPos = screenToWorld(clientX, clientY, camera, size.width, size.height);
       const id = fruitIdRef.current++;
@@ -49,25 +49,26 @@ export default function ExperienceScene() {
         id,
         position: worldPos.clone(),
         velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.5,
-          0.2 + Math.random() * 0.3,
-          (Math.random() - 0.5) * 0.3
+          (Math.random() - 0.5) * 0.15,
+          -0.05 - Math.random() * 0.1,
+          (Math.random() - 0.5) * 0.1
         ),
         rotation: new THREE.Euler(),
         scale: 1,
-        lifetime: 5,
+        lifetime: 8,
         emoji: randomFruitEmoji(),
         eating: false,
       };
       setFruits((prev) => [...prev, fruit]);
       setFruitTarget(worldPos.clone());
     },
-    [camera, size.width, size.height, eatingFruitId]
+    [camera, size.width, size.height]
   );
 
   const handleEatStart = useCallback((fruit: Fruit) => {
     eatStartRef.current = performance.now();
     eatPositionRef.current = fruit.position.clone();
+    eatingFruitIdRef.current = fruit.id;
     setEatingFruitId(fruit.id);
     setEatProgress(0);
     setFruitTarget(null);
@@ -78,19 +79,26 @@ export default function ExperienceScene() {
 
   const handleCatch = useCallback((id: number) => {
     setFruits((prev) => prev.filter((f) => f.id !== id));
-    if (eatingFruitId === id) {
+    if (eatingFruitIdRef.current === id) {
+      eatingFruitIdRef.current = null;
       setEatingFruitId(null);
       setEatProgress(0);
       eatPositionRef.current = null;
     }
-  }, [eatingFruitId]);
+  }, []);
 
   useFrame(() => {
-    if (eatingFruitId === null || !eatPositionRef.current) return;
+    const drop = useExperienceStore.getState().fruitDropAt;
+    if (drop) {
+      spawnFruitAt(drop.clientX, drop.clientY);
+      useExperienceStore.getState().clearFruitDrop();
+    }
+
+    if (eatingFruitIdRef.current === null || !eatPositionRef.current) return;
     const progress = Math.min(1, (performance.now() - eatStartRef.current) / EAT_DURATION_MS);
     setEatProgress(progress);
     if (progress >= 1) {
-      handleCatch(eatingFruitId);
+      handleCatch(eatingFruitIdRef.current);
     }
   });
 
@@ -107,10 +115,11 @@ export default function ExperienceScene() {
       <ambientLight intensity={0.45} />
       <directionalLight position={[5, 12, 6]} intensity={0.85} color="#ffffff" castShadow />
       <directionalLight position={[-4, 4, -8]} intensity={0.3} color="#6eb5e8" />
-      <hemisphereLight args={["#87ceeb", "#1a2a20", 0.5]} />
+      <hemisphereLight args={["#87ceeb", "#06080B", 0.5]} />
 
       <Suspense fallback={null}>
         <CloudSky />
+        <HotAirBalloon />
         <CityWorld />
 
         {PORTFOLIO_CONFIG.projects.map((project, i) => (
@@ -138,17 +147,6 @@ export default function ExperienceScene() {
           eatProgress={eatProgress}
         />
       </Suspense>
-
-      <mesh
-        position={[0, 0, -82]}
-        visible={false}
-        onPointerDown={(e) => {
-          spawnFruit(e.clientX, e.clientY);
-        }}
-      >
-        <planeGeometry args={[30, 20]} />
-        <meshBasicMaterial transparent opacity={0} />
-      </mesh>
     </>
   );
 }
