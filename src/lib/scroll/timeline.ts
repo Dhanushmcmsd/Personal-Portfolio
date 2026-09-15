@@ -29,7 +29,7 @@ export const SECTION = {
 
 export const NAV_TARGETS: Record<string, number> = {
   work: TIMELINE.vigilance,
-  about: 0,
+  about: TIMELINE.about,
   experience: TIMELINE.experience,
   contact: TIMELINE.contact,
 };
@@ -177,6 +177,11 @@ export function computeScrollOverlayTransform(local: number, side: -1 | 1, visib
     scale: 0.94 + life * 0.06,
     opacity: life,
   };
+}
+
+/** Clouds visible only on hero blue sky — gone before projects */
+export function getHeroCloudOpacity(progress: number) {
+  return 1 - smootherstep(TIMELINE.transition, SECTION.vigilance[0], progress);
 }
 
 /** 0 = clouds only, 1 = full cyber city visible (hero → work transition) */

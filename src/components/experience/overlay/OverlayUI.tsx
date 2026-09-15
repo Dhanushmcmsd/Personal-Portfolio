@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import {
@@ -52,12 +52,21 @@ export default function OverlayUI() {
         const local = sectionLocalProgress(p, project.timelineStart, project.timelineEnd);
         const side = i % 2 === 0 ? (-1 as const) : (1 as const);
         const anim = computeScrollOverlayTransform(local, side, visibility);
+        const boxFadeIn = local < 0.14 ? local / 0.14 : 1;
+        const boxFadeOut = local > 0.86 ? (1 - local) / 0.14 : 1;
+        const boxOpacity = visibility * boxFadeIn * boxFadeOut;
+
         setEl(
           card,
           anim.opacity,
           `translate3d(${anim.x}px, ${anim.y}px, ${anim.z}px) scale(${anim.scale})`,
           anim.opacity > 0.4 ? "auto" : "none"
         );
+
+        const backbox = card?.querySelector(".project-backbox") as HTMLElement | null;
+        if (backbox) {
+          backbox.style.setProperty("--box-opacity", String(Math.min(1, boxOpacity)));
+        }
       });
 
       const expOpacity =
@@ -133,20 +142,18 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="glitch-outline font-mono text-[10px] uppercase tracking-[0.35em] text-[#39ff14]/80">
+        <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-[#39ff14]/80">
           {hero.eyebrow}
         </p>
-        <h1 className="glitch-outline mt-6 max-w-5xl font-[family-name:var(--font-display)] text-[clamp(2.8rem,9vw,7.5rem)] leading-[0.88] tracking-tight text-[#F4F1EA]">
+        <h1 className="hero-cloud-text mt-6 max-w-5xl text-[clamp(2.8rem,9vw,7.5rem)] leading-[0.92] tracking-tight">
           {person.displayName.split(" ").map((word) => (
             <span key={word} className="block">
               {word}
             </span>
           ))}
         </h1>
-        <p className="glitch-outline mt-8 max-w-xl text-lg text-[#F4F1EA]/75 md:text-xl">
-          {hero.title}
-        </p>
-        <p className="mt-4 max-w-lg text-sm text-[#F4F1EA]/50">{hero.subtitle}</p>
+        <p className="hero-cloud-text mt-8 max-w-xl text-lg md:text-xl">{hero.title}</p>
+        <p className="hero-cloud-sub mt-4 max-w-lg text-sm">{hero.subtitle}</p>
         <p className="mt-16 font-mono text-[10px] uppercase tracking-[0.3em] text-[#39ff14]/35">
           {hero.scrollLabel} ↓
         </p>
@@ -163,8 +170,8 @@ export default function OverlayUI() {
             style={{ opacity: 0 }}
           >
             <div
-              className={`max-w-xl ${i % 2 === 0 ? "mr-auto" : "ml-auto text-right"}`}
-              style={{ transformStyle: "preserve-3d" }}
+              className={`project-backbox max-w-xl ${i % 2 === 0 ? "mr-auto" : "ml-auto text-right"}`}
+              style={{ transformStyle: "preserve-3d", "--box-opacity": 0 } as CSSProperties}
             >
               <span className="font-mono text-[10px] tracking-[0.3em] text-[#39ff14]/45">
                 PROJECT {project.index} · {project.category}
@@ -238,25 +245,25 @@ export default function OverlayUI() {
 
       <div
         ref={aboutRef}
-        className="absolute inset-0 flex items-center px-6 md:px-16"
+        className="section-about-text absolute inset-0 flex items-center px-6 md:px-16"
         style={{ opacity: 0 }}
       >
         <div className="max-w-4xl">
-          <h2 className="glitch-outline font-[family-name:var(--font-display)] text-[clamp(3rem,10vw,8rem)] leading-[0.9] text-[#F4F1EA]">
+          <h2 className="font-[family-name:var(--font-display)] text-[clamp(3rem,10vw,8rem)] leading-[0.9]">
             {content.aboutTitle}
           </h2>
-          <p className="glitch-outline mt-8 max-w-2xl text-lg font-medium leading-relaxed text-[#F4F1EA]/85 md:text-xl">
+          <p className="mt-8 max-w-2xl text-lg font-medium leading-relaxed md:text-xl">
             {content.aboutLead}
           </p>
-          <p className="mt-6 max-w-2xl text-sm leading-relaxed text-[#F4F1EA]/55 md:text-base">
+          <p className="mt-6 max-w-2xl text-sm leading-relaxed md:text-base opacity-80">
             {content.aboutText}
           </p>
-          <p className="mt-10 font-mono text-[11px] text-[#39ff14]/35">
+          <p className="mt-10 font-mono text-[11px] opacity-50">
             Scroll to explore the city below.
           </p>
           <div className="mt-8 flex flex-wrap gap-2">
             {skills.programming.slice(0, 6).map((s) => (
-              <span key={s} className="font-mono text-[10px] text-[#F4F1EA]/40">
+              <span key={s} className="font-mono text-[10px] opacity-60">
                 {s}
               </span>
             ))}

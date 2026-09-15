@@ -13,10 +13,6 @@ const links = [
 
 export default function Navigation() {
   const seek = (key: string) => {
-    if (key === "about") {
-      scrollEngine.seek(0);
-      return;
-    }
     const target = NAV_TARGETS[key];
     if (target !== undefined) scrollEngine.seek(target);
   };

@@ -191,3 +191,84 @@ canvas {
 .section-dark-text a:hover {
   color: #722f37;
 }
+
+.hero-cloud-text {
+  font-family: var(--font-hero), "Fredoka", sans-serif;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: 2px #ffffff;
+  paint-order: stroke fill;
+  text-shadow:
+    0 0 0 4px rgba(255, 255, 255, 0.95),
+    0 3px 0 rgba(255, 255, 255, 0.55),
+    0 6px 0 rgba(200, 225, 245, 0.35),
+    0 0 24px rgba(255, 255, 255, 0.25);
+}
+
+.hero-cloud-sub {
+  font-family: var(--font-hero), "Fredoka", sans-serif;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.85);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 8px rgba(110, 181, 232, 0.35);
+}
+
+.section-about-text,
+.section-about-text h2,
+.section-about-text p,
+.section-about-text span {
+  color: #101010;
+}
+
+.project-backbox {
+  position: relative;
+  padding: 1.35rem 1.6rem;
+  --box-opacity: 0;
+}
+
+.project-backbox::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  background: rgba(0, 0, 0, calc(var(--box-opacity) * 0.78));
+  border: 1px solid rgba(255, 255, 255, calc(var(--box-opacity) * 0.12));
+  clip-path: polygon(
+    0 12px,
+    12px 0,
+    calc(100% - 12px) 0,
+    100% 12px,
+    100% calc(100% - 12px),
+    calc(100% - 12px) 100%,
+    12px 100%,
+    0 calc(100% - 12px)
+  );
+  opacity: var(--box-opacity);
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.project-backbox::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(57, 255, 20, calc(var(--box-opacity) * 0.5)),
+    transparent
+  );
+  opacity: var(--box-opacity);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.project-backbox > * {
+  position: relative;
+  z-index: 1;
+}
