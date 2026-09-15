@@ -26,7 +26,7 @@ export default function ExperienceScene() {
   const [fruits, setFruits] = useState<Fruit[]>([]);
   const [fruitTarget, setFruitTarget] = useState<THREE.Vector3 | null>(null);
   const [catchPulse, setCatchPulse] = useState(0);
-  const virusPositionRef = useRef(new THREE.Vector3(1.2, -0.35, -88));
+  const virusPositionRef = useRef(new THREE.Vector3(0, 0.5, -8));
   const fruitIdRef = useRef(0);
   const { camera, size } = useThree();
 
@@ -100,7 +100,7 @@ export default function ExperienceScene() {
       </Suspense>
 
       <mesh
-        position={[0, 0, -88]}
+        position={[0, 0, -82]}
         visible={false}
         onPointerDown={(e) => {
           const p = scrollEngine.progress;

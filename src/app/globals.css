@@ -96,7 +96,7 @@ canvas {
   position: absolute;
   width: 42px;
   height: 42px;
-  border-color: rgba(0, 229, 255, 0.35);
+  border-color: rgba(57, 255, 20, 0.35);
   border-style: solid;
 }
 
@@ -131,8 +131,8 @@ canvas {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 229, 255, 0.015) 2px,
-    rgba(0, 229, 255, 0.015) 4px
+    rgba(57, 255, 20, 0.015) 2px,
+    rgba(57, 255, 20, 0.015) 4px
   );
   opacity: 0.35;
   animation: hudScan 8s linear infinite;
@@ -148,5 +148,18 @@ canvas {
 }
 
 .hud-status {
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.15);
+  text-shadow: 0 0 12px rgba(57, 255, 20, 0.15);
+}
+
+.glitch-outline {
+  text-shadow:
+    -1px 0 rgba(57, 255, 20, 0.45),
+    1px 0 rgba(0, 229, 255, 0.35),
+    0 0 12px rgba(57, 255, 20, 0.12);
+}
+
+@supports (-webkit-text-stroke: 1px rgba(57, 255, 20, 0.3)) {
+  .glitch-outline {
+    -webkit-text-stroke: 0.4px rgba(57, 255, 20, 0.25);
+  }
 }

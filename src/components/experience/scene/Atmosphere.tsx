@@ -9,12 +9,12 @@ export default function Atmosphere() {
   const particlesRef = useRef<THREE.Points>(null);
 
   const particles = useMemo(() => {
-    const count = 220;
+    const count = 180;
     const positions = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 70;
-      positions[i * 3 + 1] = Math.random() * 8 + 0.5;
-      positions[i * 3 + 2] = -Math.random() * 110 - 5;
+      positions[i * 3] = (Math.random() - 0.5) * 60;
+      positions[i * 3 + 1] = Math.random() * 6 + 0.5;
+      positions[i * 3 + 2] = -Math.random() * 100 - 5;
     }
     return positions;
   }, []);
@@ -22,25 +22,25 @@ export default function Atmosphere() {
   useFrame((state) => {
     const p = scrollEngine.progress;
     if (particlesRef.current) {
-      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.015;
-      particlesRef.current.position.z = -p * 75;
+      particlesRef.current.position.z = -p * 80;
     }
+    void state;
   });
 
   return (
     <group>
-      <color attach="background" args={["#040608"]} />
-      <fog attach="fog" args={["#061018", 6, 48]} />
+      <color attach="background" args={["#030504"]} />
+      <fog attach="fog" args={["#041208", 5, 42]} />
 
       <points ref={particlesRef}>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[particles, 3]} />
         </bufferGeometry>
         <pointsMaterial
-          size={0.035}
-          color="#00E5FF"
+          size={0.03}
+          color="#39ff14"
           transparent
-          opacity={0.28}
+          opacity={0.22}
           sizeAttenuation
           blending={THREE.AdditiveBlending}
           depthWrite={false}

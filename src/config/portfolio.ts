@@ -32,8 +32,8 @@ export const PORTFOLIO_CONFIG = {
 
   interaction: {
     enableFinalVirusFruitInteraction: true,
-    finalOnly: false,
-    finalSceneStart: 0,
+    finalOnly: true,
+    finalSceneStart: 0.74,
   },
 
   content: {
@@ -70,8 +70,8 @@ export const PORTFOLIO_CONFIG = {
       live: "",
       color: "#00E5FF",
       metrics: ["Web + Mobile", "Offline workflows", "Geofencing", "RBAC / RLS"],
-      timelineStart: 0.1,
-      timelineEnd: 0.24,
+      timelineStart: 0.08,
+      timelineEnd: 0.2,
     },
     {
       id: "hsn",
@@ -101,8 +101,8 @@ export const PORTFOLIO_CONFIG = {
         "Confidence scoring",
         "Bulk Excel processing",
       ],
-      timelineStart: 0.24,
-      timelineEnd: 0.38,
+      timelineStart: 0.2,
+      timelineEnd: 0.32,
     },
     {
       id: "finance",
@@ -127,8 +127,8 @@ export const PORTFOLIO_CONFIG = {
       live: "",
       color: "#FFD166",
       metrics: ["KPI dashboards", "Branch comparison", "NPA analysis", "Excel ingestion"],
-      timelineStart: 0.38,
-      timelineEnd: 0.52,
+      timelineStart: 0.32,
+      timelineEnd: 0.44,
     },
     {
       id: "python",
@@ -145,8 +145,8 @@ export const PORTFOLIO_CONFIG = {
       live: "",
       color: "#39FF14",
       metrics: ["12-week path", "Mission tracking", "Automation focus"],
-      timelineStart: 0.52,
-      timelineEnd: 0.64,
+      timelineStart: 0.44,
+      timelineEnd: 0.56,
     },
   ],
 

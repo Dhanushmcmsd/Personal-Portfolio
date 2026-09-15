@@ -14,8 +14,7 @@ interface VirusMascotProps {
   positionRef?: React.MutableRefObject<THREE.Vector3>;
 }
 
-const VIRUS_SCALE = 0.42;
-const BASE_POSITION = new THREE.Vector3(1.2, -0.35, -88);
+const VIRUS_SCALE = 0.11;
 
 export default function VirusMascot({
   targetPosition,
@@ -23,53 +22,52 @@ export default function VirusMascot({
   positionRef,
 }: VirusMascotProps) {
   const groupRef = useRef<THREE.Group>(null);
-  const currentPos = useRef(BASE_POSITION.clone());
+  const currentPos = useRef(new THREE.Vector3(0, 0, 0));
   const { scene } = useGLTF("/models/dhanush-virus-mascot.glb");
 
   const clonedScene = useMemo(() => {
     const clone = scene.clone(true);
     clone.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
-        (child as THREE.Mesh).castShadow = true;
-        (child as THREE.Mesh).receiveShadow = true;
+        const mesh = child as THREE.Mesh;
+        mesh.castShadow = false;
+        mesh.receiveShadow = false;
       }
     });
     return clone;
   }, [scene]);
 
   useFrame((state) => {
-    const p = scrollEngine.progress;
-    const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
-    const visible = rangeProgress(p, finalStart - 0.02, finalStart + 0.06);
-
     if (!groupRef.current) return;
-    groupRef.current.visible = visible > 0.05;
-    if (visible <= 0.05) return;
 
-    const idle = new THREE.Vector3(
-      Math.sin(state.clock.elapsedTime * 1.2) * 0.12,
-      Math.sin(state.clock.elapsedTime * 1.5) * 0.08,
-      0
-    );
+    const p = scrollEngine.progress;
+    const t = state.clock.elapsedTime;
+    const finalStart = PORTFOLIO_CONFIG.interaction.finalSceneStart;
+    const aboutVisible = rangeProgress(p, finalStart - 0.04, finalStart + 0.02);
+    const petAlpha = 0.35 + aboutVisible * 0.65;
 
-    if (targetPosition) {
-      currentPos.current.lerp(targetPosition, 0.12);
+    const orbitX = Math.sin(t * 0.55) * 1.6 + Math.cos(t * 0.23) * 0.4;
+    const orbitY = 0.35 + Math.sin(t * 0.7) * 0.25 + p * 0.15;
+    const orbitZ = -8 - p * 70 + Math.cos(t * 0.45) * 0.8;
+
+    const target = new THREE.Vector3(orbitX, orbitY, orbitZ);
+
+    if (targetPosition && aboutVisible > 0.5) {
+      currentPos.current.lerp(targetPosition, 0.08);
     } else {
-      currentPos.current.lerp(BASE_POSITION.clone().add(idle), 0.06);
+      currentPos.current.lerp(target, 0.04);
     }
 
     groupRef.current.position.copy(currentPos.current);
     if (positionRef) positionRef.current.copy(currentPos.current);
-    groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.85) * 0.25;
-    groupRef.current.rotation.z = Math.sin(state.clock.elapsedTime * 1.1) * 0.08;
-    groupRef.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.6) * 0.05;
-    groupRef.current.scale.setScalar((1 + catchPulse * 0.12) * visible);
+    groupRef.current.rotation.y = t * 0.8;
+    groupRef.current.rotation.z = Math.sin(t * 1.2) * 0.15;
+    groupRef.current.scale.setScalar(VIRUS_SCALE * petAlpha * (1 + catchPulse * 0.15));
   });
 
   return (
-    <group ref={groupRef} position={BASE_POSITION.toArray()}>
-      <primitive object={clonedScene} scale={VIRUS_SCALE} />
-      <pointLight position={[0, 0.6, 0.8]} intensity={0.45} color="#8B5CFF" distance={3} />
+    <group ref={groupRef}>
+      <primitive object={clonedScene} scale={1} />
     </group>
   );
 }
