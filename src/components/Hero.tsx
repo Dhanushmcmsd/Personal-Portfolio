@@ -1,17 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { personalInfo } from "@/data/resume";
 import CursorSpotlight from "./CursorSpotlight";
 import InteractiveBee from "./InteractiveBee";
 
 export default function Hero() {
+  const [beeInFront, setBeeInFront] = useState(false);
+
   return (
     <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-cream px-6">
       <CursorSpotlight />
-      <InteractiveBee />
 
-      <div className="relative z-10 mx-auto max-w-7xl text-center">
+      {/* Bee layer — z-index toggles as bee flies behind/in front of text */}
+      <InteractiveBee
+        onDepthChange={(_z, inFront) => setBeeInFront(inFront)}
+      />
+
+      {/* Hero text — sits between bee depth layers */}
+      <div
+        className="relative mx-auto max-w-7xl text-center transition-all duration-150"
+        style={{
+          zIndex: 10,
+          transform: beeInFront ? "scale(0.98)" : "scale(1)",
+          filter: beeInFront ? "blur(0.3px)" : "none",
+        }}
+      >
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -26,10 +41,14 @@ export default function Hero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
           className="font-display text-[clamp(2.5rem,8vw,7rem)] leading-[0.9] tracking-tight text-forest"
+          style={{ transformStyle: "preserve-3d" }}
         >
-          <span className="block">CREATIVE</span>
-          <span className="block">FULL-STACK</span>
-          <span className="block underline decoration-purple-500 decoration-4 underline-offset-8">
+          <span className="block" style={{ transform: "translateZ(0px)" }}>CREATIVE</span>
+          <span className="block" style={{ transform: "translateZ(20px)" }}>FULL-STACK</span>
+          <span
+            className="block underline decoration-purple-500 decoration-4 underline-offset-8"
+            style={{ transform: "translateZ(40px)" }}
+          >
             AI ENGINEER
           </span>
         </motion.h1>
@@ -49,7 +68,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.7 }}
           className="mt-12 text-[11px] text-forest/40"
         >
-          (Click to feed the bee)
+          (Click to feed the bee — watch it fly in 3D)
         </motion.p>
       </div>
 
@@ -57,7 +76,7 @@ export default function Hero() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2"
+        className="absolute bottom-10 left-1/2 z-30 -translate-x-1/2"
       >
         <a
           href="#work"
