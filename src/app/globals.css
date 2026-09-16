@@ -206,9 +206,9 @@ canvas {
 .experience-glitch-bg {
   position: absolute;
   left: 50%;
-  top: 12%;
-  bottom: 14%;
-  width: min(720px, 88%);
+  top: 18%;
+  bottom: 18%;
+  width: min(640px, 82%);
   --exp-reveal: 0;
   --exp-scroll-away: 0;
   pointer-events: none;
@@ -268,6 +268,7 @@ canvas {
 
 .section-experience .experience-content {
   position: relative;
+  max-height: min(78vh, 680px);
 }
 
 .section-experience .experience-content::before {
@@ -359,13 +360,12 @@ canvas {
   font-family: var(--font-display), "Archivo Black", sans-serif;
   font-weight: 400;
   color: #0a0a0a;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.01em;
   text-transform: uppercase;
-  white-space: normal;
+  white-space: nowrap;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-  overflow-wrap: normal;
-  word-break: keep-all;
+  max-width: 96vw;
 }
 
 .hero-eyebrow-text,

@@ -202,7 +202,7 @@ export default function OverlayUI() {
           <p className="hero-eyebrow-text mx-auto text-[15px] md:text-[18px] opacity-80">
             {hero.eyebrow}
           </p>
-          <h1 className="hero-name-text mx-auto mt-6 w-full max-w-[92vw] text-[clamp(1.6rem,5.5vw,5rem)] leading-[0.95]">
+          <h1 className="hero-name-text mx-auto mt-6 w-full text-[clamp(1.05rem,3.6vw,3.5rem)] leading-none">
             {person.displayName}
           </h1>
           <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-2xl md:text-4xl">{hero.title}</p>
@@ -261,7 +261,7 @@ export default function OverlayUI() {
 
       <div
         ref={experienceRef}
-        className="section-experience section-dark-text absolute inset-0 flex items-center justify-center px-6 md:px-16"
+        className="section-experience section-dark-text absolute inset-0 flex items-center justify-center px-6 py-8 md:px-16"
         style={{ opacity: 0 }}
       >
         <div
@@ -270,22 +270,19 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
-        <div className="experience-content relative z-10 mx-auto w-full max-w-3xl text-center font-bold">
-          <p className="font-mono text-xs uppercase tracking-[0.35em] opacity-80 md:text-sm">
+        <div className="experience-content relative z-10 mx-auto w-full max-w-2xl text-center font-bold">
+          <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold md:text-3xl">
             Experience
-          </p>
-          <h2 className="mt-4 font-[family-name:var(--font-display)] text-5xl font-bold md:text-7xl">
-            WHERE I&apos;VE WORKED
           </h2>
-          <div className="mt-12 space-y-10 text-left">
+          <div className="mt-5 space-y-5 text-left">
             {experience.map((job) => (
-              <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-6">
-                <p className="font-mono text-sm font-bold opacity-80 md:text-base">{job.period}</p>
-                <h3 className="mt-1 text-2xl font-bold md:text-3xl">{job.role}</h3>
-                <p className="text-base font-bold opacity-90 md:text-lg">{job.company}</p>
-                <ul className="mt-3 space-y-2">
+              <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-5">
+                <p className="font-mono text-[11px] font-bold opacity-80 md:text-xs">{job.period}</p>
+                <h3 className="mt-1 text-lg font-bold md:text-xl">{job.role}</h3>
+                <p className="text-sm font-bold opacity-90">{job.company}</p>
+                <ul className="mt-2 space-y-1.5">
                   {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="text-sm font-bold leading-relaxed opacity-85 md:text-base">
+                    <li key={h} className="text-xs font-bold leading-relaxed opacity-85">
                       {h}
                     </li>
                   ))}
