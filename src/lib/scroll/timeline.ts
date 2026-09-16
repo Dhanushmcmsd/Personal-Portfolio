@@ -30,15 +30,11 @@ export const SECTION = {
   contact: [0.98, SCROLL_LOCK_PROGRESS] as const,
 };
 
-function sectionCenter(section: readonly [number, number]) {
-  return (section[0] + section[1]) / 2;
-}
-
 export const NAV_TARGETS: Record<string, number> = {
-  work: sectionCenter(SECTION.vigilance),
-  experience: sectionCenter(SECTION.experience),
-  about: sectionCenter(SECTION.about),
-  contact: sectionCenter(SECTION.contact),
+  work: SECTION.vigilance[0] + 0.05,
+  experience: SECTION.experience[0] + 0.07,
+  about: SECTION.about[0] + 0.055,
+  contact: SECTION.contact[0] + 0.085,
 };
 
 export interface CameraKeyframe {

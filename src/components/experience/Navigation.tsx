@@ -13,6 +13,7 @@ const links = [
 
 export default function Navigation() {
   const seek = (key: string) => {
+    scrollEngine.init();
     const target = NAV_TARGETS[key];
     if (target !== undefined) scrollEngine.seek(target);
   };
@@ -24,7 +25,7 @@ export default function Navigation() {
         paddingTop: "max(1.25rem, env(safe-area-inset-top))",
       }}
     >
-      <button onClick={() => scrollEngine.seek(0)} className="pressable text-left max-w-[42vw] sm:max-w-none">
+      <button onClick={() => { scrollEngine.init(); scrollEngine.seek(0); }} className="pressable text-left max-w-[42vw] sm:max-w-none">
         <span className="nav-kola-text text-[10px] sm:text-xs text-[#F4F1EA]/90 leading-tight">
           {PORTFOLIO_CONFIG.person.displayName}
         </span>

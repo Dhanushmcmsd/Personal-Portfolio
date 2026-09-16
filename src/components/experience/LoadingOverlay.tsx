@@ -30,17 +30,17 @@ function stageStyles(progress: number) {
   const lightBlur = 2 + p * 14;
   const lightWarp = 1 + Math.sin(p * Math.PI * 3) * 0.04 * p;
 
-  const earthFadeIn = range(p, 0.3, 0.48);
-  const earthStage = range(p, 0.34, 0.72);
-  const bottomZoom = 1.08 + earthStage * 1.05;
-  const bottomPanY = 8 + earthStage * 28;
+  const earthFadeIn = range(p, 0.18, 0.32);
+  const earthStage = range(p, 0.2, 0.42);
+  const bottomZoom = 1.12 + earthStage * 1.95;
+  const bottomPanY = 6 + earthStage * 48;
   const bottomPanX = Math.sin(earthStage * Math.PI * 1.4) * 2.5;
 
   const bloomFade = Math.max(0, 1 - range(p, 0.4, 0.58));
 
   const videoIn = range(p, 0.48, 0.68);
   const videoOut = 1 - range(p, 0.78, 1);
-  const earthMerge = 1 - range(p, 0.5, 0.74);
+  const earthMerge = 1 - range(p, 0.4, 0.58);
   const homeMerge = range(p, 0.76, 0.94);
   const videoOpacity = Math.min(1, videoIn * 1.05) * Math.max(0.18, videoOut);
   const hudFade = 1 - range(p, 0.48, 0.6);

@@ -47,7 +47,10 @@ class ScrollEngine {
   seek(progress: number) {
     const max = this.getMaxScroll();
     const clamped = Math.max(0, Math.min(SCROLL_LOCK_PROGRESS, progress));
-    window.scrollTo({ top: clamped * max, behavior: this.reducedMotion ? "auto" : "smooth" });
+    window.scrollTo({
+      top: (clamped / SCROLL_LOCK_PROGRESS) * max,
+      behavior: this.reducedMotion ? "auto" : "smooth",
+    });
   }
 
   getMaxScroll() {
