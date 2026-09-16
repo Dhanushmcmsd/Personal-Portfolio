@@ -195,8 +195,8 @@ export default function OverlayUI() {
           <h1 className="hero-name-text mx-auto mt-6 w-full text-[clamp(1.05rem,3.6vw,3.5rem)] leading-none">
             {person.displayName}
           </h1>
-          <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-2xl md:text-4xl">{hero.title}</p>
-          <p className="hero-body-text mx-auto mt-4 w-full max-w-3xl text-base md:text-xl opacity-90">
+          <p className="hero-body-text mx-auto mt-6 w-full max-w-4xl text-xl sm:text-2xl md:text-4xl px-2">{hero.title}</p>
+          <p className="hero-body-text mx-auto mt-4 w-full max-w-3xl text-sm sm:text-base md:text-xl opacity-90 px-3">
             {hero.subtitle}
           </p>
           <p className="hero-body-text mx-auto mt-16 text-[14px] md:text-[17px] opacity-70">

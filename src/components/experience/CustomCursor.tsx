@@ -28,7 +28,16 @@ function isInteractiveTarget(target: EventTarget | null) {
   );
 }
 
+function isTouchEnvironment() {
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    window.matchMedia("(hover: none)").matches ||
+    navigator.maxTouchPoints > 0
+  );
+}
+
 export default function CustomCursor() {
+  const [enabled, setEnabled] = useState(false);
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [phase, setPhase] = useState<CursorPhase>("default");
   const [bursts, setBursts] = useState<GlitchBurst[]>([]);
@@ -55,6 +64,12 @@ export default function CustomCursor() {
   }, []);
 
   useEffect(() => {
+    setEnabled(!isTouchEnvironment());
+  }, []);
+
+  useEffect(() => {
+    if (!enabled) return;
+
     let cancelled = false;
 
     Promise.all(
@@ -80,9 +95,11 @@ export default function CustomCursor() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   useEffect(() => {
+    if (!enabled) return;
+
     const onMove = (e: MouseEvent) => {
       targetPos.current = { x: e.clientX, y: e.clientY };
       interactiveRef.current = isInteractiveTarget(e.target);
@@ -128,9 +145,11 @@ export default function CustomCursor() {
       cancelAnimationFrame(rafRef.current);
       clearClickTimers();
     };
-  }, [clearClickTimers, resolvePhase]);
+  }, [clearClickTimers, enabled, resolvePhase]);
 
   const offset = hotspots?.[phase] ?? { x: 0, y: 0 };
+
+  if (!enabled) return null;
 
   return (
     <>

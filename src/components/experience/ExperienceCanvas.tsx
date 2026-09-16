@@ -13,7 +13,9 @@ export default function ExperienceCanvas() {
   const [dpr, setDpr] = useState(1);
 
   useEffect(() => {
-    setDpr(Math.min(2, window.devicePixelRatio || 1));
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const cap = isMobile ? 1.25 : 2;
+    setDpr(Math.min(cap, window.devicePixelRatio || 1));
 
     const durationMs = 3600;
     const start = performance.now();

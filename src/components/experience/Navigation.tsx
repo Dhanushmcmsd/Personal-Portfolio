@@ -24,23 +24,35 @@ export default function Navigation() {
         paddingTop: "max(1.25rem, env(safe-area-inset-top))",
       }}
     >
-      <button onClick={() => scrollEngine.seek(0)} className="pressable text-left">
-        <span className="nav-kola-text text-xs text-[#F4F1EA]/90">
+      <button onClick={() => scrollEngine.seek(0)} className="pressable text-left max-w-[42vw] sm:max-w-none">
+        <span className="nav-kola-text text-[10px] sm:text-xs text-[#F4F1EA]/90 leading-tight">
           {PORTFOLIO_CONFIG.person.displayName}
         </span>
-        <span className="nav-kola-text mt-0.5 block text-[10px] text-[#F4F1EA]/45">
+        <span className="nav-kola-text mt-0.5 hidden text-[10px] text-[#F4F1EA]/45 sm:block">
           {PORTFOLIO_CONFIG.person.shortRole}
         </span>
       </button>
 
-      <div className="flex items-center gap-5 md:gap-8">
+      <div className="flex items-center gap-2.5 sm:gap-5 md:gap-8">
         {links.map((link) => (
           <button
             key={link.key}
             onClick={() => seek(link.key)}
-            className="nav-kola-text pressable text-[11px] text-[#F4F1EA]/55 transition-colors hover:text-[#00E5FF]"
+            className="nav-kola-text pressable text-[9px] sm:text-[11px] text-[#F4F1EA]/55 transition-colors hover:text-[#00E5FF]"
           >
-            {link.label}
+            {link.key === "about" ? (
+              <>
+                <span className="sm:hidden">About</span>
+                <span className="hidden sm:inline">Who I Am</span>
+              </>
+            ) : link.key === "experience" ? (
+              <>
+                <span className="sm:hidden">Exp</span>
+                <span className="hidden sm:inline">Experience</span>
+              </>
+            ) : (
+              link.label
+            )}
           </button>
         ))}
       </div>

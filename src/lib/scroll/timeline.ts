@@ -200,9 +200,9 @@ export function getCloudCityBlend(progress: number) {
   return smootherstep(TIMELINE.hero, TIMELINE.vigilance + 0.02, progress);
 }
 
-/** 0→1 fire sweep progress: last project end → about start */
+/** 0→1 fire sweep progress: after experience → about (hold city intact during experience) */
 export function getCityWhiteFireProgress(progress: number) {
-  return smootherstep(SECTION.python[1] - 0.02, SECTION.about[0], progress);
+  return smootherstep(SECTION.experience[1], SECTION.about[0], progress);
 }
 
 /** Rising world-Y threshold for bottom-up white fire mask */

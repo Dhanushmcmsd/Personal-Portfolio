@@ -27,8 +27,12 @@ function padIndex(n: number) {
 
 function computeCardWidth(containerWidth: number) {
   if (containerWidth <= 0) return 360;
-  const visible = containerWidth < 640 ? 1.02 : containerWidth < 1100 ? 1.85 : 2.7;
-  return Math.max(280, Math.min(420, Math.floor((containerWidth - CARD_GAP * (visible - 1)) / visible)));
+  const visible =
+    containerWidth < 480 ? 1.08 : containerWidth < 768 ? 1.25 : containerWidth < 1100 ? 1.85 : 2.7;
+  return Math.max(
+    260,
+    Math.min(420, Math.floor((containerWidth - CARD_GAP * (visible - 1)) / visible))
+  );
 }
 
 function loopSegmentWidth(cardCount: number, cardWidth: number) {

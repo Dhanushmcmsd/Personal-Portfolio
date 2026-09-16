@@ -142,10 +142,25 @@ export default function CityWorld() {
   const fireBandTex = useMemo(() => makeFireBandTexture(), []);
 
   const { buildings, greenWindowTex, whiteWindowTex } = useMemo(() => {
-    const segments = 4;
+    const segments = 6;
     const all: BuildingData[] = [];
     for (let s = 0; s < segments; s++) {
       all.push(...generateSegment(-s * SEGMENT));
+    }
+    // Permanent flank rows so side buildings never gap during experience scroll
+    for (let z = -8; z > -SEGMENT * segments; z -= 4) {
+      for (const side of [-1, 1] as const) {
+        const h = 4.5 + ((z * 7) % 11) * 0.55;
+        all.push({
+          x: side * (9.2 + (z % 3) * 0.35),
+          y: h / 2 - 2.1,
+          z,
+          sx: 2.4,
+          sy: h,
+          sz: 2.8,
+          ry: side * 0.02,
+        });
+      }
     }
     return {
       buildings: all,

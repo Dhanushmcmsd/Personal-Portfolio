@@ -795,4 +795,92 @@ label,
   .cursor-image-reveal {
     display: none !important;
   }
+
+  .custom-cursor,
+  .cursor-click-glitch {
+    display: none !important;
+  }
+
+  html,
+  body,
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  label,
+  [role="button"] {
+    cursor: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .technical-hud .hud-status {
+    display: none;
+  }
+
+  .hero-name-text {
+    white-space: normal;
+    font-size: clamp(1.35rem, 7.5vw, 2.4rem) !important;
+    line-height: 1.05;
+  }
+
+  .hero-body-text {
+    font-size: clamp(1rem, 4.5vw, 1.35rem) !important;
+    letter-spacing: 0.08em;
+  }
+
+  .hero-eyebrow-text {
+    font-size: 12px !important;
+  }
+
+  .section-experience {
+    padding-top: 4.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .experience-carousel__heading {
+    font-size: clamp(1.6rem, 8vw, 2.2rem);
+  }
+
+  .experience-carousel__hint {
+    margin-bottom: 0.75rem;
+    font-size: 9px;
+  }
+
+  .experience-card__inner {
+    min-height: 280px;
+    padding: 1.2rem 1rem 1rem;
+  }
+
+  .experience-card__title {
+    font-size: 1.15rem;
+  }
+
+  .experience-card__body {
+    font-size: 0.78rem;
+  }
+
+  .section-about-text {
+    padding-top: 5rem;
+    padding-bottom: 2rem;
+  }
+
+  .section-contact h2 {
+    font-size: clamp(1.8rem, 9vw, 3rem) !important;
+  }
+
+  .project-backbox {
+    max-width: 92vw !important;
+    padding: 1rem 1.1rem;
+  }
+
+  .project-backbox h2 {
+    font-size: clamp(1.6rem, 8vw, 2.6rem) !important;
+  }
+
+  nav {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
 }
