@@ -38,7 +38,6 @@ function isTouchEnvironment() {
 
 export default function CustomCursor() {
   const [enabled, setEnabled] = useState(false);
-  const [pos, setPos] = useState({ x: -100, y: -100 });
   const [phase, setPhase] = useState<CursorPhase>("default");
   const [bursts, setBursts] = useState<GlitchBurst[]>([]);
   const [hotspots, setHotspots] = useState<Record<CursorPhase, { x: number; y: number }> | null>(
@@ -51,6 +50,7 @@ export default function CustomCursor() {
   const targetPos = useRef({ x: -100, y: -100 });
   const currentPos = useRef({ x: -100, y: -100 });
   const rafRef = useRef(0);
+  const cursorRef = useRef<HTMLDivElement>(null);
 
   phaseRef.current = phase;
 
@@ -104,7 +104,8 @@ export default function CustomCursor() {
       targetPos.current = { x: e.clientX, y: e.clientY };
       interactiveRef.current = isInteractiveTarget(e.target);
       if (phaseRef.current !== "click1" && phaseRef.current !== "click2") {
-        setPhase(interactiveRef.current ? "hover" : "default");
+        const next: CursorPhase = interactiveRef.current ? "hover" : "default";
+        if (phaseRef.current !== next) setPhase(next);
       }
     };
 
@@ -131,7 +132,10 @@ export default function CustomCursor() {
       const nx = cx + (tx - cx) * CURSOR_LERP;
       const ny = cy + (ty - cy) * CURSOR_LERP;
       currentPos.current = { x: nx, y: ny };
-      setPos({ x: nx, y: ny });
+      const el = cursorRef.current;
+      if (el) {
+        el.style.transform = `translate3d(${nx}px, ${ny}px, 0)`;
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
 
@@ -154,8 +158,9 @@ export default function CustomCursor() {
   return (
     <>
       <div
+        ref={cursorRef}
         className="custom-cursor"
-        style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
+        style={{ transform: "translate3d(-100px, -100px, 0)" }}
         aria-hidden="true"
       >
         <img

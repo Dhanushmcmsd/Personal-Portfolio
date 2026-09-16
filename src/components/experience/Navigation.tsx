@@ -7,7 +7,7 @@ import { scrollEngine } from "@/lib/scroll/scrollEngine";
 const links = [
   { label: "Work", key: "work" },
   { label: "Experience", key: "experience" },
-  { label: "Who I Am", key: "about" },
+  { label: "About", key: "about" },
   { label: "Contact", key: "contact" },
 ];
 
@@ -40,12 +40,7 @@ export default function Navigation() {
             onClick={() => seek(link.key)}
             className="nav-kola-text pressable text-[9px] sm:text-[11px] text-[#F4F1EA]/55 transition-colors hover:text-[#00E5FF]"
           >
-            {link.key === "about" ? (
-              <>
-                <span className="sm:hidden">About</span>
-                <span className="hidden sm:inline">Who I Am</span>
-              </>
-            ) : link.key === "experience" ? (
+            {link.key === "experience" ? (
               <>
                 <span className="sm:hidden">Exp</span>
                 <span className="hidden sm:inline">Experience</span>

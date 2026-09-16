@@ -16,10 +16,7 @@ function ratioToTime(ratio: number, duration: number) {
   return Math.max(0, Math.min(duration, t));
 }
 
-function snapshotVideo(
-  video: HTMLVideoElement,
-  canvas: HTMLCanvasElement
-) {
+function snapshotVideo(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
   const width = Math.max(1, Math.round(canvas.clientWidth));
   const height = Math.max(1, Math.round(canvas.clientHeight));
   if (canvas.width !== width) canvas.width = width;
@@ -30,7 +27,7 @@ function snapshotVideo(
   const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
   const dw = video.videoWidth * scale;
   const dh = video.videoHeight * scale;
-  const x = (width - dw) * 0.68;
+  const x = (width - dw) * 0.32;
   const y = (height - dh) * 0.32;
 
   ctx.clearRect(0, 0, width, height);
@@ -40,20 +37,24 @@ function snapshotVideo(
 
 export function useTurnOnCursorX(
   videoRef: RefObject<HTMLVideoElement | null>,
-  ghostRef: RefObject<HTMLCanvasElement | null>
+  ghostRef: RefObject<HTMLCanvasElement | null>,
+  active: boolean
 ) {
   useEffect(() => {
     const video = videoRef.current;
     const ghost = ghostRef.current;
-    if (!video) return;
+    if (!video || !active) return;
 
     let desktop = isDesktopWidth();
     let cursorTarget = 0;
     let smoothTarget = 0;
+    let pendingClientX: number | null = null;
     let seeking = false;
     let ghostOpacity = 0;
     let frame = 0;
     let running = true;
+    let seekToken = 0;
+    const timeouts: number[] = [];
 
     const applyNeutralFrame = () => {
       const duration = video.duration;
@@ -86,13 +87,8 @@ export function useTurnOnCursorX(
 
     const onMove = (event: MouseEvent) => {
       if (!desktop) return;
-      const duration = video.duration;
-      if (!Number.isFinite(duration) || duration <= 0) return;
-      cursorTarget = ratioToTime(event.clientX / Math.max(1, window.innerWidth), duration);
+      pendingClientX = event.clientX;
     };
-
-    let seekToken = 0;
-    const timeouts: number[] = [];
 
     const onSeeked = () => {
       seeking = false;
@@ -101,7 +97,18 @@ export function useTurnOnCursorX(
     const tick = () => {
       if (!running) return;
 
-      if (ghost) {
+      if (pendingClientX !== null) {
+        const duration = video.duration;
+        if (Number.isFinite(duration) && duration > 0) {
+          cursorTarget = ratioToTime(
+            pendingClientX / Math.max(1, window.innerWidth),
+            duration
+          );
+        }
+        pendingClientX = null;
+      }
+
+      if (ghost && ghostOpacity > 0) {
         ghostOpacity += (0 - ghostOpacity) * GHOST_FADE;
         if (ghostOpacity < 0.01) ghostOpacity = 0;
         ghost.style.opacity = String(ghostOpacity);
@@ -154,6 +161,7 @@ export function useTurnOnCursorX(
       window.removeEventListener("resize", onResize);
       window.removeEventListener("mousemove", onMove);
       window.cancelAnimationFrame(frame);
+      video.pause();
     };
-  }, [videoRef, ghostRef]);
+  }, [active, videoRef, ghostRef]);
 }
