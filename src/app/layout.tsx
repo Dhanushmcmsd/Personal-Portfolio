@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
-import { Archivo_Black, DM_Sans, Saira_Stencil_One, Teko } from "next/font/google";
+import { Archivo_Black, DM_Sans, Plus_Jakarta_Sans, Saira_Stencil_One, Teko } from "next/font/google";
 import "./globals.css";
 
 const archivo = Archivo_Black({
@@ -12,6 +12,12 @@ const archivo = Archivo_Black({
 const dmSans = DM_Sans({
   subsets: ["latin"],
   variable: "--font-body",
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-experience",
 });
 
 const stardom = localFont({
@@ -53,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivo.variable} ${dmSans.variable} ${stardom.variable} ${teko.variable} ${kola.variable}`}
+      className={`${archivo.variable} ${dmSans.variable} ${plusJakarta.variable} ${stardom.variable} ${teko.variable} ${kola.variable}`}
     >
       <body className="antialiased">{children}</body>
     </html>

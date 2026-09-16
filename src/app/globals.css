@@ -7,6 +7,7 @@
   --color-accent-secondary: #8B5CFF;
   --font-display: "Archivo Black", sans-serif;
   --font-body: "DM Sans", sans-serif;
+  --font-experience: "Plus Jakarta Sans", sans-serif;
   --font-name: "Stardom", serif;
   --font-hero-body: "Teko", sans-serif;
   --font-nav: "Kola", "Saira Stencil One", sans-serif;
@@ -269,6 +270,46 @@ canvas {
 .section-experience .experience-content {
   position: relative;
   max-height: min(86vh, 780px);
+  font-family: var(--font-experience), var(--font-body), sans-serif;
+}
+
+.section-experience .experience-heading,
+.section-experience .experience-role,
+.section-experience .experience-company,
+.section-experience .experience-meta,
+.section-experience .experience-detail {
+  color: #0a0a0a;
+  letter-spacing: -0.01em;
+  text-shadow:
+    0 0 6px rgba(255, 210, 80, 0.65),
+    0 0 16px rgba(255, 190, 50, 0.45),
+    0 0 28px rgba(255, 170, 30, 0.28);
+}
+
+.section-experience .experience-heading {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.section-experience .experience-role {
+  font-weight: 600;
+}
+
+.section-experience .experience-company {
+  font-weight: 500;
+  opacity: 0.92;
+}
+
+.section-experience .experience-meta {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 500;
+  font-size: 0.8em;
+  opacity: 0.78;
+}
+
+.section-experience .experience-detail {
+  font-weight: 400;
+  opacity: 0.88;
 }
 
 .section-experience .experience-content::before {
@@ -307,13 +348,11 @@ canvas {
 .section-experience.section-dark-text p,
 .section-experience.section-dark-text li,
 .section-experience.section-dark-text span {
-  color: #101010;
-  font-weight: 700;
+  color: #0a0a0a;
   text-shadow:
-    0 0 4px rgba(255, 214, 120, 0.22),
-    0 0 10px rgba(255, 200, 80, 0.12),
-    -0.5px -0.5px 0 rgba(114, 47, 55, 0.4),
-    0.5px 0.5px 0 rgba(114, 47, 55, 0.4);
+    0 0 6px rgba(255, 210, 80, 0.65),
+    0 0 16px rgba(255, 190, 50, 0.45),
+    0 0 28px rgba(255, 170, 30, 0.28);
 }
 
 .experience-note {

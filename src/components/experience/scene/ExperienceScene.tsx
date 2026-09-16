@@ -14,7 +14,6 @@ import CloudSky from "./CloudSky";
 import HotAirBalloon from "./HotAirBalloon";
 import HeroAsteroids from "./HeroAsteroids";
 import ProjectExhibit from "./ProjectExhibit";
-import ContactHeadingPlatform from "./ContactHeadingPlatform";
 import VirusMascot, { EAT_DURATION_MS, type EatTarget } from "./VirusMascot";
 import FruitSystem, { randomFruitEmoji, screenToWorld, type Fruit } from "./FruitSystem";
 
@@ -136,7 +135,6 @@ export default function ExperienceScene() {
           />
         ))}
 
-        <ContactHeadingPlatform />
         <VirusMascot
           targetPosition={fruitTarget}
           eatTarget={eatTarget}
