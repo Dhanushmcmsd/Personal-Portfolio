@@ -9,6 +9,7 @@ import ProjectSheet from "./ProjectSheet";
 import CustomCursor from "./CustomCursor";
 import CursorImageReveal from "./overlay/CursorImageReveal";
 import ContactFruitFeed from "./overlay/ContactFruitFeed";
+import CursorFollowCharacter from "./overlay/CursorFollowCharacter";
 const ExperienceCanvas = dynamic(() => import("./ExperienceCanvas"), {
   ssr: false,
   loading: () => <div className="fixed inset-0 bg-[#06080B]" />,
@@ -26,6 +27,7 @@ export default function PortfolioExperience() {
       <ContactFruitFeed />
       <ScrollDriver />
       <ProjectSheet />
+      <CursorFollowCharacter />
     </>
   );
 }

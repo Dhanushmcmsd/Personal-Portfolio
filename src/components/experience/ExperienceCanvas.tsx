@@ -17,7 +17,7 @@ export default function ExperienceCanvas() {
     const cap = isMobile ? 1.25 : 2;
     setDpr(Math.min(cap, window.devicePixelRatio || 1));
 
-    const durationMs = 3600;
+    const durationMs = 7200;
     const start = performance.now();
     let raf = 0;
 
@@ -27,7 +27,7 @@ export default function ExperienceCanvas() {
       setLoadProgress(progress);
 
       if (progress >= 100) {
-        window.setTimeout(() => setLoaded(true), 560);
+        window.setTimeout(() => setLoaded(true), 800);
         return;
       }
 

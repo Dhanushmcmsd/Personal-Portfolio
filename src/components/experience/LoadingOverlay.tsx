@@ -3,12 +3,19 @@
 import { useEffect, useRef } from "react";
 import { useExperienceStore } from "@/stores/experienceStore";
 
-const SKY_HERO = "#6eb5e8";
+function clamp01(v: number) {
+  return Math.min(1, Math.max(0, v));
+}
+
+function range(p: number, start: number, end: number) {
+  return clamp01((p - start) / (end - start || 1));
+}
 
 function labelForProgress(progress: number) {
   if (progress < 40) return "INITIATING TIME JUMP";
-  if (progress < 75) return "WARPING THROUGH SPACE-TIME";
-  return "APPROACHING EARTH ATMOSPHERE";
+  if (progress < 58) return "WARPING THROUGH SPACE-TIME";
+  if (progress < 82) return "APPROACHING EARTH ATMOSPHERE";
+  return "ENTERING HOME ORBIT";
 }
 
 function labelColor(progress: number) {
@@ -23,45 +30,55 @@ function stageStyles(progress: number) {
   const lightBlur = 2 + p * 14;
   const lightWarp = 1 + Math.sin(p * Math.PI * 3) * 0.04 * p;
 
-  const earthFadeIn = Math.min(1, Math.max(0, (p - 0.34) / 0.22));
-  const earthStage = Math.min(1, Math.max(0, (p - 0.38) / 0.52));
-  const bottomZoom = 1.08 + earthStage * 1.35;
-  const bottomPanY = 8 + earthStage * 42;
+  const earthFadeIn = range(p, 0.3, 0.48);
+  const earthStage = range(p, 0.34, 0.72);
+  const bottomZoom = 1.08 + earthStage * 1.05;
+  const bottomPanY = 8 + earthStage * 28;
   const bottomPanX = Math.sin(earthStage * Math.PI * 1.4) * 2.5;
-  const warpAmount = earthStage * 6 + Math.max(0, (p - 0.88) / 0.12) * 14;
 
-  const bloomFade = Math.max(0, 1 - (p - 0.42) / 0.28);
+  const bloomFade = Math.max(0, 1 - range(p, 0.4, 0.58));
 
-  const skyBlend = Math.min(1, Math.max(0, (p - 0.78) / 0.22));
-  const warpPunch = Math.max(0, (p - 0.9) / 0.1);
-  const warpScale = 1 + warpPunch * 0.14;
-  const warpBlur = warpPunch * 20;
-
-  const overlayOpacity = 1 - Math.min(1, Math.max(0, (p - 0.92) / 0.08));
+  const videoIn = range(p, 0.48, 0.68);
+  const videoOut = 1 - range(p, 0.78, 1);
+  const earthMerge = 1 - range(p, 0.5, 0.74);
+  const homeMerge = range(p, 0.76, 0.94);
+  const videoOpacity = Math.min(1, videoIn * 1.05) * Math.max(0.18, videoOut);
+  const hudFade = 1 - range(p, 0.48, 0.6);
+  const overlayOpacity = 1 - range(p, 0.88, 1);
+  const rootClear = range(p, 0.74, 0.9);
+  const mergeBlend = videoIn < 1 || homeMerge > 0.02 ? "screen" : "normal";
 
   return {
     light: {
-      opacity: 1 - earthFadeIn * 0.92,
+      opacity: (1 - earthFadeIn * 0.92) * (1 - videoIn * 0.85),
       transform: `scale(${lightScale * lightWarp})`,
       filter: `blur(${lightBlur}px) brightness(${1.1 + p * 0.35})`,
     },
     bloom: {
-      opacity: bloomFade * 0.65,
+      opacity: bloomFade * 0.65 * (1 - videoIn * 0.7),
       transform: `scale(${1 + p * 0.8})`,
       filter: `blur(${24 + p * 30}px)`,
     },
     earth: {
-      opacity: earthFadeIn,
+      opacity: earthFadeIn * earthMerge,
       transformOrigin: "50% 100%",
-      transform: `translate(${bottomPanX}%, ${bottomPanY}%) scale(${bottomZoom * warpScale})`,
-      filter: `blur(${warpAmount + warpBlur}px) saturate(${1 - skyBlend * 0.2}) brightness(${1 + earthStage * 0.08})`,
+      transform: `translate(${bottomPanX}%, ${bottomPanY}%) scale(${bottomZoom})`,
+      filter: `blur(${earthStage * 3 + videoIn * 8}px) saturate(${1.05 + videoIn * 0.15}) brightness(${1 + earthStage * 0.1 + videoIn * 0.12})`,
     },
-    skyWash: {
-      opacity: skyBlend * 0.98,
+    video: {
+      opacity: videoOpacity,
+      mixBlendMode: mergeBlend,
+      filter: `blur(${(1 - videoIn) * 6 + homeMerge * 10}px) saturate(${1.05 + homeMerge * 0.2}) brightness(${1 + homeMerge * 0.12})`,
+    },
+    skyMerge: {
+      opacity: homeMerge * videoOut * 0.72,
+    },
+    hud: {
+      opacity: hudFade,
     },
     root: {
       opacity: overlayOpacity,
-      backgroundColor: skyBlend > 0.88 ? SKY_HERO : "#020408",
+      backgroundColor: `rgba(2, 4, 8, ${1 - rootClear})`,
     },
   };
 }
@@ -73,21 +90,37 @@ export default function LoadingOverlay() {
   const lightRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
   const earthRef = useRef<HTMLDivElement>(null);
-  const skyRef = useRef<HTMLDivElement>(null);
+  const videoWrapRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const skyMergeRef = useRef<HTMLDivElement>(null);
+  const hudRef = useRef<HTMLDivElement>(null);
+  const playingRef = useRef(false);
 
   useEffect(() => {
     if (loaded) return;
 
-    const apply = () => {
-      const styles = stageStyles(loadProgress);
-      if (rootRef.current) Object.assign(rootRef.current.style, styles.root);
-      if (lightRef.current) Object.assign(lightRef.current.style, styles.light);
-      if (bloomRef.current) Object.assign(bloomRef.current.style, styles.bloom);
-      if (earthRef.current) Object.assign(earthRef.current.style, styles.earth);
-      if (skyRef.current) Object.assign(skyRef.current.style, styles.skyWash);
-    };
+    const styles = stageStyles(loadProgress);
+    if (rootRef.current) Object.assign(rootRef.current.style, styles.root);
+    if (lightRef.current) Object.assign(lightRef.current.style, styles.light);
+    if (bloomRef.current) Object.assign(bloomRef.current.style, styles.bloom);
+    if (earthRef.current) Object.assign(earthRef.current.style, styles.earth);
+    if (videoWrapRef.current) Object.assign(videoWrapRef.current.style, styles.video);
+    if (skyMergeRef.current) Object.assign(skyMergeRef.current.style, styles.skyMerge);
+    if (hudRef.current) Object.assign(hudRef.current.style, styles.hud);
 
-    apply();
+    const video = videoRef.current;
+    if (video) {
+      const videoOpacity = Number(styles.video.opacity);
+      if (videoOpacity > 0.04 && !playingRef.current) {
+        playingRef.current = true;
+        video.currentTime = 0;
+        const playAttempt = video.play();
+        if (playAttempt) playAttempt.catch(() => {});
+      }
+      if (videoOpacity <= 0.02 && playingRef.current) {
+        video.pause();
+      }
+    }
   }, [loaded, loadProgress]);
 
   if (loaded) return null;
@@ -101,7 +134,7 @@ export default function LoadingOverlay() {
       className="loading-overlay fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden"
       style={{
         ...styles.root,
-        transition: exiting ? "opacity 0.55s ease, background-color 0.55s ease" : undefined,
+        transition: exiting ? "opacity 0.7s ease" : undefined,
         pointerEvents: exiting ? "none" : "auto",
       }}
     >
@@ -129,19 +162,44 @@ export default function LoadingOverlay() {
           style={{
             backgroundImage: "url(/loading/earth.png)",
             ...styles.earth,
+            transition: "opacity 0.55s ease, filter 0.55s ease, transform 0.55s ease",
           }}
         />
         <div
-          ref={skyRef}
+          ref={videoWrapRef}
+          className="absolute inset-0 will-change-[opacity,filter]"
+          style={{
+            ...styles.video,
+            transition: "opacity 0.7s ease, filter 0.7s ease",
+          }}
+        >
+          <video
+            ref={videoRef}
+            className="h-full w-full object-cover"
+            src="/loading/approach-earth.mp4"
+            muted
+            playsInline
+            preload="auto"
+          />
+        </div>
+        <div
+          ref={skyMergeRef}
           className="absolute inset-0 will-change-[opacity]"
           style={{
-            background: `linear-gradient(to bottom, transparent 20%, ${SKY_HERO} 92%)`,
-            ...styles.skyWash,
+            background:
+              "linear-gradient(to bottom, rgba(110,181,232,0.15) 0%, #6eb5e8 78%)",
+            mixBlendMode: "screen",
+            ...styles.skyMerge,
+            transition: "opacity 0.7s ease",
           }}
         />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center px-6 text-center">
+      <div
+        ref={hudRef}
+        className="relative z-10 flex flex-col items-center px-6 text-center will-change-[opacity]"
+        style={styles.hud}
+      >
         <p
           className="font-mono text-[10px] uppercase tracking-[0.42em]"
           style={{ color: labelColor(loadProgress) }}
