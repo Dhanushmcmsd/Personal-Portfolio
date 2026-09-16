@@ -111,21 +111,46 @@ function generateSegment(offsetZ: number): BuildingData[] {
   return buildings;
 }
 
+/** Foreground rows that stay visible as the camera travels deeper into the city */
+function generateForwardRows(): BuildingData[] {
+  const buildings: BuildingData[] = [];
+  let i = 0;
+  for (let z = 20; z <= 78; z += 3.5) {
+    for (const side of [-1, 1] as const) {
+      const h = 3.2 + ((i * 11) % 14) * 0.55;
+      buildings.push({
+        x: side * (7.8 + (i % 5) * 0.35),
+        y: h / 2 - 2.1,
+        z,
+        sx: 2.1 + (i % 4) * 0.25,
+        sy: h,
+        sz: 2.4 + (i % 3) * 0.2,
+        ry: side * 0.025,
+      });
+      i++;
+    }
+  }
+  return buildings;
+}
+
 function lerpColor(target: THREE.Color, a: THREE.Color, b: THREE.Color, t: number) {
   target.copy(a).lerp(b, t);
   return target;
 }
 
+const clipBelowPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 2.5);
+const clipAbovePlane = new THREE.Plane(new THREE.Vector3(0, -1, 0), -2.5);
+
 function applyClipBelow(mat: THREE.Material, maskY: number) {
-  mat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -maskY)];
+  clipBelowPlane.constant = -maskY;
+  mat.clippingPlanes = [clipBelowPlane];
   mat.clipIntersection = false;
-  mat.needsUpdate = true;
 }
 
 function applyClipAbove(mat: THREE.Material, maskY: number) {
-  mat.clippingPlanes = [new THREE.Plane(new THREE.Vector3(0, -1, 0), maskY)];
+  clipAbovePlane.constant = maskY;
+  mat.clippingPlanes = [clipAbovePlane];
   mat.clipIntersection = false;
-  mat.needsUpdate = true;
 }
 
 export default function CityWorld() {
@@ -147,8 +172,9 @@ export default function CityWorld() {
     for (let s = 0; s < segments; s++) {
       all.push(...generateSegment(-s * SEGMENT));
     }
+    all.push(...generateForwardRows());
     // Permanent flank rows so side buildings never gap during experience scroll
-    for (let z = -8; z > -SEGMENT * segments; z -= 4) {
+    for (let z = 78; z > -SEGMENT * segments; z -= 4) {
       for (const side of [-1, 1] as const) {
         const h = 4.5 + ((z * 7) % 11) * 0.55;
         all.push({
@@ -285,7 +311,6 @@ export default function CityWorld() {
     const p = scrollEngine.progress;
     const t = state.clock.elapsedTime;
     const travel = p * TRAVEL_MAX;
-    const loopOffset = travel % SEGMENT;
     const cityReveal = getCloudCityBlend(p);
     const blackPhase = getCityBlackPhase(p);
     const fireProgress = getCityWhiteFireProgress(p);
@@ -293,7 +318,8 @@ export default function CityWorld() {
     const dimFactor = 1;
 
     if (worldRef.current) {
-      worldRef.current.position.z = -travel + loopOffset;
+      // Continuous scroll — no modulo snap (that caused a one-frame foreground pop at segment seams)
+      worldRef.current.position.z = -travel;
       worldRef.current.position.x = Math.sin(p * Math.PI * 1.5) * 0.25;
       worldRef.current.position.y = -6 + cityReveal * 6;
       worldRef.current.scale.setScalar(0.4 + cityReveal * 0.6);
