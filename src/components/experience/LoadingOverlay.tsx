@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { useExperienceStore } from "@/stores/experienceStore";
 
 function clamp01(v: number) {
@@ -46,7 +46,8 @@ function stageStyles(progress: number) {
   const hudFade = 1 - range(p, 0.48, 0.6);
   const overlayOpacity = 1 - range(p, 0.88, 1);
   const rootClear = range(p, 0.74, 0.9);
-  const mergeBlend = videoIn < 1 || homeMerge > 0.02 ? "screen" : "normal";
+  const mergeBlend: CSSProperties["mixBlendMode"] =
+    videoIn < 1 || homeMerge > 0.02 ? "screen" : "normal";
 
   return {
     light: {

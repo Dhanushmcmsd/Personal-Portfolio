@@ -15,9 +15,12 @@ export default function CursorFollowCharacter() {
 
   useEffect(() => {
     scrollEngine.init();
-    return scrollEngine.subscribe((progress) => {
+    const unsub = scrollEngine.subscribe((progress) => {
       setOpacity(exclusiveOpacity(progress, SECTION.contact[0], SECTION.contact[1], 0.06));
     });
+    return () => {
+      unsub();
+    };
   }, []);
 
   return (
