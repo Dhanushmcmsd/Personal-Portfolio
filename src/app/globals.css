@@ -206,9 +206,9 @@ canvas {
 .experience-glitch-bg {
   position: absolute;
   left: 50%;
-  top: 18%;
-  bottom: 18%;
-  width: min(640px, 82%);
+  top: 12%;
+  bottom: 12%;
+  width: min(680px, 86%);
   --exp-reveal: 0;
   --exp-scroll-away: 0;
   pointer-events: none;
@@ -268,7 +268,7 @@ canvas {
 
 .section-experience .experience-content {
   position: relative;
-  max-height: min(78vh, 680px);
+  max-height: min(86vh, 780px);
 }
 
 .section-experience .experience-content::before {

@@ -271,18 +271,18 @@ export default function OverlayUI() {
           aria-hidden="true"
         />
         <div className="experience-content relative z-10 mx-auto w-full max-w-2xl text-center font-bold">
-          <h2 className="font-[family-name:var(--font-display)] text-2xl font-bold md:text-3xl">
+          <h2 className="font-[family-name:var(--font-display)] text-4xl font-bold md:text-5xl">
             Experience
           </h2>
-          <div className="mt-5 space-y-5 text-left">
+          <div className="mt-6 space-y-6 text-left">
             {experience.map((job) => (
               <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-5">
-                <p className="font-mono text-[11px] font-bold opacity-80 md:text-xs">{job.period}</p>
-                <h3 className="mt-1 text-lg font-bold md:text-xl">{job.role}</h3>
-                <p className="text-sm font-bold opacity-90">{job.company}</p>
+                <p className="font-mono text-sm font-bold opacity-80 md:text-base">{job.period}</p>
+                <h3 className="mt-1 text-2xl font-bold md:text-3xl">{job.role}</h3>
+                <p className="text-lg font-bold opacity-90">{job.company}</p>
                 <ul className="mt-2 space-y-1.5">
                   {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="text-xs font-bold leading-relaxed opacity-85">
+                    <li key={h} className="text-sm font-bold leading-relaxed opacity-85 md:text-base">
                       {h}
                     </li>
                   ))}
@@ -368,9 +368,13 @@ export default function OverlayUI() {
           }
         }}
       >
-        <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.5rem,8vw,6rem)] leading-none">
+        <h2
+          className="pointer-events-none font-[family-name:var(--font-display)] text-[clamp(2.5rem,8vw,6rem)] leading-none opacity-0"
+          aria-hidden="true"
+        >
           {content.contactHeading}
         </h2>
+        <p className="sr-only">{content.contactHeading}</p>
         <p className="mt-6 max-w-md text-sm opacity-75">{content.contactText}</p>
         <p className="mt-4 font-mono text-[10px] opacity-60">(Click to feed the virus)</p>
         <div className="pointer-events-auto mt-12 flex flex-col items-center gap-4">
