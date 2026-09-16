@@ -17,8 +17,8 @@ const HERO_VIDEOS = [
 ];
 
 const SKY_HERO = "#6eb5e8";
-const LERP_POSITION = 0.14;
-const LERP_RADIUS = 0.16;
+const LERP_POSITION = 0.1;
+const LERP_RADIUS = 0.12;
 const BASE_RADIUS = 68;
 const MIN_RADIUS = 52;
 const MAX_RADIUS = 96;
@@ -299,22 +299,13 @@ export default function CursorImageReveal() {
 
         drawBlueMask(w, h, cx, cy);
 
-        const outlinePoints = [
-          ...trail.map((point) => {
-            const life = 1 - point.age / TRAIL_MAX;
-            return {
-              x: point.x,
-              y: point.y,
-              radius: point.r * (0.6 + life * 0.45),
-              wobble: time + point.age * 0.12,
-              alpha: life * life,
-            };
-          }),
-          ...(pointerInside
-            ? [{ x: cx, y: cy, radius: currentRadius, wobble: time, alpha: 1 }]
-            : []),
-        ];
-        drawRevealOutline(glowCtx, outlinePoints, scrollFade * 0.92);
+        if (pointerInside) {
+          drawRevealOutline(
+            glowCtx,
+            [{ x: cx, y: cy, radius: currentRadius, wobble: time, alpha: 1 }],
+            scrollFade * 0.92
+          );
+        }
 
         updateHint(cx, cy, scrollFade);
       }

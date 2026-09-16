@@ -240,6 +240,23 @@ canvas {
   font-family: var(--font-experience), var(--font-body), sans-serif;
 }
 
+.experience-side-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to right,
+      rgba(6, 8, 11, 0.88) 0%,
+      rgba(6, 8, 11, 0.35) 8%,
+      transparent 18%,
+      transparent 82%,
+      rgba(6, 8, 11, 0.35) 92%,
+      rgba(6, 8, 11, 0.88) 100%
+    );
+}
+
 .experience-carousel {
   width: 100%;
   perspective: 1600px;
@@ -269,14 +286,14 @@ canvas {
 .experience-carousel__viewport {
   overflow: hidden;
   padding: 0.5rem 0 1.25rem;
-  cursor: grab;
+  cursor: none !important;
   touch-action: none;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
-  mask-image: linear-gradient(to right, transparent 0%, #000 6%, #000 94%, transparent 100%);
 }
 
-.experience-carousel__viewport:active {
-  cursor: grabbing;
+.experience-carousel__viewport:active,
+.experience-carousel__track,
+.experience-carousel__track * {
+  cursor: none !important;
 }
 
 .experience-carousel__track {

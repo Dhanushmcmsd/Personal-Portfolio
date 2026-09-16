@@ -260,6 +260,7 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
+        <div className="experience-side-vignette" aria-hidden="true" />
         <div className="pointer-events-auto relative z-10 w-full max-w-6xl">
           <ExperienceCarousel />
         </div>

@@ -18,8 +18,11 @@ const CURSORS: Record<CursorPhase, string> = {
   click2: "/cursor/click2.png",
 };
 
+const CURSOR_LERP = 0.1;
+
 function isInteractiveTarget(target: EventTarget | null) {
   if (!(target instanceof Element)) return false;
+  if (target.closest(".experience-carousel__viewport, .experience-carousel__track")) return false;
   return Boolean(
     target.closest("a, button, [role='button'], .pressable, input, textarea, select, label")
   );
@@ -36,6 +39,9 @@ export default function CustomCursor() {
   const clickTimers = useRef<number[]>([]);
   const interactiveRef = useRef(false);
   const phaseRef = useRef<CursorPhase>("default");
+  const targetPos = useRef({ x: -100, y: -100 });
+  const currentPos = useRef({ x: -100, y: -100 });
+  const rafRef = useRef(0);
 
   phaseRef.current = phase;
 
@@ -78,7 +84,7 @@ export default function CustomCursor() {
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
-      setPos({ x: e.clientX, y: e.clientY });
+      targetPos.current = { x: e.clientX, y: e.clientY };
       interactiveRef.current = isInteractiveTarget(e.target);
       if (phaseRef.current !== "click1" && phaseRef.current !== "click2") {
         setPhase(interactiveRef.current ? "hover" : "default");
@@ -100,12 +106,26 @@ export default function CustomCursor() {
       );
     };
 
+    const tick = () => {
+      const tx = targetPos.current.x;
+      const ty = targetPos.current.y;
+      const cx = currentPos.current.x;
+      const cy = currentPos.current.y;
+      const nx = cx + (tx - cx) * CURSOR_LERP;
+      const ny = cy + (ty - cy) * CURSOR_LERP;
+      currentPos.current = { x: nx, y: ny };
+      setPos({ x: nx, y: ny });
+      rafRef.current = requestAnimationFrame(tick);
+    };
+
     window.addEventListener("mousemove", onMove);
     window.addEventListener("mousedown", onDown);
+    rafRef.current = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mousedown", onDown);
+      cancelAnimationFrame(rafRef.current);
       clearClickTimers();
     };
   }, [clearClickTimers, resolvePhase]);
