@@ -203,14 +203,92 @@ canvas {
   color: #722f37;
 }
 
+.experience-glitch-bg {
+  position: absolute;
+  left: 4%;
+  right: 28%;
+  top: 12%;
+  bottom: 14%;
+  --exp-reveal: 0;
+  --exp-scroll-away: 0;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(calc(var(--exp-scroll-away) * 120px))
+    scale(calc(0.92 + var(--exp-reveal) * 0.08));
+  clip-path: inset(
+    calc((1 - var(--exp-reveal)) * 100%) 0 calc(var(--exp-scroll-away) * 35%) 0
+  );
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(140, 180, 255, 0.04) 0px,
+      rgba(140, 180, 255, 0.04) 1px,
+      transparent 1px,
+      transparent 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(180, 140, 255, 0.035) 0px,
+      rgba(180, 140, 255, 0.035) 1px,
+      transparent 1px,
+      transparent 6px
+    ),
+    linear-gradient(
+      115deg,
+      rgba(120, 200, 255, calc(var(--exp-reveal) * 0.12)) 0%,
+      rgba(160, 120, 255, calc(var(--exp-reveal) * 0.1)) 45%,
+      rgba(100, 180, 255, calc(var(--exp-reveal) * 0.08)) 100%
+    );
+  border: 1px solid rgba(160, 190, 255, calc(var(--exp-reveal) * 0.22));
+  box-shadow:
+    inset 0 0 40px rgba(130, 170, 255, calc(var(--exp-reveal) * 0.08)),
+    0 0 24px rgba(170, 130, 255, calc(var(--exp-reveal) * 0.06));
+  animation: experienceBgGlitch 2.8s steps(2, end) infinite;
+}
+
+@keyframes experienceBgGlitch {
+  0%,
+  100% {
+    filter: none;
+  }
+  20% {
+    filter: hue-rotate(4deg) saturate(1.15);
+    transform: translateY(calc(var(--exp-scroll-away) * 120px)) translateX(-2px)
+      scale(calc(0.92 + var(--exp-reveal) * 0.08));
+  }
+  40% {
+    filter: hue-rotate(-3deg);
+    transform: translateY(calc(var(--exp-scroll-away) * 120px)) translateX(2px)
+      scale(calc(0.92 + var(--exp-reveal) * 0.08));
+  }
+  60% {
+    filter: contrast(1.08);
+  }
+}
+
+.about-string-canvas {
+  transition: opacity 0.35s ease;
+}
+
+.hero-section {
+  pointer-events: none;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .hero-name-text {
   position: relative;
   font-family: var(--font-display), "Archivo Black", sans-serif;
   font-weight: 400;
   color: #0a0a0a;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   white-space: nowrap;
+  text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
@@ -220,8 +298,9 @@ canvas {
   font-family: var(--font-hero-body), "Teko", sans-serif;
   font-weight: 300;
   color: #0a0a0a;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
+  text-align: center;
 }
 
 .hero-name-text,
@@ -434,7 +513,7 @@ label,
   image-rendering: pixelated;
 }
 
-.cursor-click-flame {
+.cursor-click-glitch {
   position: fixed;
   top: 0;
   left: 0;
@@ -442,59 +521,52 @@ label,
   width: 0;
   height: 0;
   pointer-events: none;
-  will-change: transform, opacity;
-  animation: gothicFlameFade 0.52s ease-out forwards;
+  animation: clickGlitchFade 0.48s steps(2, end) forwards;
 }
 
-.cursor-click-flame-outer,
-.cursor-click-flame-mid,
-.cursor-click-flame-core {
+.cursor-click-glitch-bar {
   position: absolute;
   left: 0;
   top: 0;
-  transform: translate(-50%, -70%);
-  border-radius: 50% 50% 45% 45%;
-  pointer-events: none;
+  transform: translate(-50%, -50%);
+  height: 2px;
+  border-radius: 1px;
+  opacity: 0.9;
 }
 
-.cursor-click-flame-outer {
-  width: 18px;
-  height: 22px;
-  background: radial-gradient(
-    ellipse at 50% 80%,
-    rgba(120, 20, 40, 0.85) 0%,
-    rgba(40, 8, 20, 0.55) 45%,
-    transparent 72%
-  );
-  filter: blur(1px);
-  animation: gothicFlameFlicker 0.52s ease-out forwards;
+.cursor-click-glitch-bar-a {
+  width: 20px;
+  background: linear-gradient(90deg, transparent, #8fd4ff, #b8a0ff, transparent);
+  animation: clickGlitchShiftA 0.48s steps(3, end) forwards;
 }
 
-.cursor-click-flame-mid {
-  width: 10px;
-  height: 14px;
-  background: radial-gradient(
-    ellipse at 50% 85%,
-    rgba(180, 60, 20, 0.9) 0%,
-    rgba(100, 20, 10, 0.5) 55%,
-    transparent 75%
-  );
-  animation: gothicFlameFlicker 0.48s ease-out forwards;
+.cursor-click-glitch-bar-b {
+  width: 14px;
+  background: linear-gradient(90deg, transparent, #a8e8ff, transparent);
+  animation: clickGlitchShiftB 0.48s steps(3, end) forwards;
 }
 
-.cursor-click-flame-core {
-  width: 5px;
-  height: 7px;
-  background: radial-gradient(
-    ellipse at 50% 90%,
-    rgba(255, 180, 60, 0.95) 0%,
-    rgba(200, 80, 20, 0.6) 50%,
-    transparent 80%
-  );
-  box-shadow: 0 0 6px rgba(255, 120, 40, 0.55);
+.cursor-click-glitch-bar-c {
+  width: 24px;
+  background: linear-gradient(90deg, transparent, #c4b0ff, #90d8ff, transparent);
+  animation: clickGlitchShiftC 0.48s steps(3, end) forwards;
 }
 
-@keyframes gothicFlameFade {
+.cursor-click-glitch-core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #d8f0ff 0%, #b898ff 55%, transparent 72%);
+  box-shadow:
+    0 0 6px rgba(143, 212, 255, 0.8),
+    0 0 10px rgba(184, 160, 255, 0.55);
+  animation: clickGlitchCore 0.48s steps(2, end) forwards;
+}
+
+@keyframes clickGlitchFade {
   0% {
     opacity: 1;
   }
@@ -503,17 +575,50 @@ label,
   }
 }
 
-@keyframes gothicFlameFlicker {
+@keyframes clickGlitchShiftA {
   0% {
-    transform: translate(-50%, -70%) scale(0.7) skewX(0deg);
+    transform: translate(-50%, -50%) skewX(0deg);
   }
-  30% {
-    transform: translate(-52%, -78%) scale(1) skewX(-6deg);
+  33% {
+    transform: translate(-58%, -62%) skewX(-12deg);
   }
-  60% {
-    transform: translate(-48%, -82%) scale(0.92) skewX(5deg);
+  66% {
+    transform: translate(-42%, -38%) skewX(10deg);
   }
   100% {
-    transform: translate(-50%, -90%) scale(0.55) skewX(0deg);
+    transform: translate(-50%, -50%) skewX(0deg);
+  }
+}
+
+@keyframes clickGlitchShiftB {
+  0% {
+    transform: translate(-50%, -50%);
+  }
+  50% {
+    transform: translate(-46%, -54%) scaleX(1.2);
+  }
+  100% {
+    transform: translate(-54%, -46%) scaleX(0.85);
+  }
+}
+
+@keyframes clickGlitchShiftC {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(6deg) scaleX(1.15);
+  }
+}
+
+@keyframes clickGlitchCore {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.4);
   }
 }

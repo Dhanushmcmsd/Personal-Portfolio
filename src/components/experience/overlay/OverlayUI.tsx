@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { useExperienceStore } from "@/stores/experienceStore";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
+import AboutStringConnections from "./AboutStringConnections";
 import {
   computeScrollOverlayTransform,
   exclusiveOpacity,
@@ -35,12 +36,14 @@ export default function OverlayUI() {
   const heroRef = useRef<HTMLDivElement>(null);
   const projectCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const experienceRef = useRef<HTMLDivElement>(null);
+  const experienceBgRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const aboutPaperRef = useRef<HTMLDivElement>(null);
   const aboutPhotoRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
+  const [aboutStringsActive, setAboutStringsActive] = useState(false);
 
   useEffect(() => {
     scrollEngine.init();
@@ -80,7 +83,18 @@ export default function OverlayUI() {
       const expOpacity =
         rangeProgress(p, SECTION.experience[0], SECTION.experience[0] + 0.03) *
         inverseRangeProgress(p, SECTION.experience[1] - 0.02, SECTION.experience[1] + 0.02);
+      const expLocal = sectionLocalProgress(p, SECTION.experience[0], SECTION.experience[1]);
+      const expBgReveal =
+        smootherstep(0, 0.45, expLocal) * (1 - smootherstep(0.72, 1, expLocal));
       setEl(experienceRef.current, expOpacity, `translateY(${(1 - expOpacity) * 28}px)`);
+      if (experienceBgRef.current) {
+        experienceBgRef.current.style.setProperty("--exp-reveal", String(expBgReveal));
+        experienceBgRef.current.style.setProperty(
+          "--exp-scroll-away",
+          String(smootherstep(0.55, 1, expLocal))
+        );
+        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal);
+      }
 
       const aboutOpacity = exclusiveOpacity(
         p,
@@ -106,6 +120,7 @@ export default function OverlayUI() {
           String(photoReveal * (0.15 + Math.sin(p * 24) * 0.08))
         );
       }
+      setAboutStringsActive(aboutOpacity > 0.35);
 
       const contactOpacity = exclusiveOpacity(
         p,
@@ -159,22 +174,24 @@ export default function OverlayUI() {
 
       <div
         ref={heroRef}
-        className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
+        className="hero-section absolute inset-0 flex flex-col items-center justify-center px-4 md:px-10"
         style={{ opacity: 1 }}
       >
-        <p className="hero-eyebrow-text text-[13px] md:text-[15px] opacity-80">
-          {hero.eyebrow}
-        </p>
-        <h1 className="hero-name-text mt-6 max-w-full text-[clamp(1.55rem,5.8vw,5.8rem)] leading-none">
-          {person.displayName}
-        </h1>
-        <p className="hero-body-text mt-8 max-w-2xl text-xl md:text-2xl">{hero.title}</p>
-        <p className="hero-body-text mt-4 max-w-2xl text-sm md:text-base opacity-90">
-          {hero.subtitle}
-        </p>
-        <p className="hero-body-text mt-16 text-[13px] md:text-[15px] opacity-70">
-          {hero.scrollLabel} ↓
-        </p>
+        <div className="hero-content w-full max-w-[min(100%,1040px)] text-center">
+          <p className="hero-eyebrow-text mx-auto text-[13px] md:text-[15px] opacity-80">
+            {hero.eyebrow}
+          </p>
+          <h1 className="hero-name-text mx-auto mt-6 w-full text-[clamp(2rem,11vw,7.5rem)] leading-[0.92]">
+            {person.displayName}
+          </h1>
+          <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-xl md:text-3xl">{hero.title}</p>
+          <p className="hero-body-text mx-auto mt-4 w-full max-w-3xl text-sm md:text-lg opacity-90">
+            {hero.subtitle}
+          </p>
+          <p className="hero-body-text mx-auto mt-16 text-[13px] md:text-[15px] opacity-70">
+            {hero.scrollLabel} ↓
+          </p>
+        </div>
       </div>
 
       <div className="absolute inset-0">
@@ -226,7 +243,13 @@ export default function OverlayUI() {
         className="section-dark-text absolute inset-0 flex items-center px-6 md:px-16"
         style={{ opacity: 0 }}
       >
-        <div className="max-w-3xl">
+        <div
+          ref={experienceBgRef}
+          className="experience-glitch-bg"
+          style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
+          aria-hidden="true"
+        />
+        <div className="relative z-10 max-w-3xl">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-70">
             Experience
           </p>
@@ -260,6 +283,13 @@ export default function OverlayUI() {
           </div>
         </div>
       </div>
+
+      <AboutStringConnections
+        paperRef={aboutPaperRef}
+        photoRef={aboutPhotoRef}
+        containerRef={aboutRef}
+        active={aboutStringsActive}
+      />
 
       <div
         ref={aboutRef}

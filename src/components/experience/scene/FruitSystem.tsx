@@ -116,10 +116,15 @@ export default function FruitSystem({
         >
           <Html
             center
-            distanceFactor={120}
+            distanceFactor={6}
             style={{
-              fontSize: "1.5px",
+              fontSize: "22px",
+              width: "22px",
+              height: "22px",
               lineHeight: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               pointerEvents: "none",
               userSelect: "none",
               opacity: fruit.eating ? Math.max(0, 1 - eatProgress) : 1,
