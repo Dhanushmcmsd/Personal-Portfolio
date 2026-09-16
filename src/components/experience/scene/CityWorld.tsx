@@ -9,7 +9,6 @@ import FloorReflection from "./FloorReflection";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
-const FLOOR_LAYER_COUNT = 3;
 
 const CYBER_GREEN = {
   building: new THREE.Color("#0a1208"),
@@ -133,7 +132,8 @@ export default function CityWorld() {
   const fireBandRef = useRef<THREE.Mesh>(null);
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
-  const floorLayersRef = useRef<THREE.Mesh[]>([]);
+  const simpleFloorRef = useRef<THREE.Mesh>(null);
+  const travelRef = useRef(0);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const fireBandTex = useMemo(() => makeFireBandTexture(), []);
 
@@ -150,15 +150,13 @@ export default function CityWorld() {
     };
   }, []);
 
-  const floorLayerMats = useRef(
-    Array.from({ length: FLOOR_LAYER_COUNT }, (_, i) =>
-      new THREE.MeshBasicMaterial({
-        color: BLACK_VOID,
-        transparent: true,
-        opacity: 0.98 - i * 0.06,
-        depthWrite: i === 0,
-      })
-    )
+  const simpleFloorMat = useRef(
+    new THREE.MeshBasicMaterial({
+      color: BLACK_VOID,
+      transparent: true,
+      opacity: 0.96,
+      depthWrite: true,
+    })
   );
 
   const greenBuildingMat = useRef(
@@ -269,6 +267,7 @@ export default function CityWorld() {
     const p = scrollEngine.progress;
     const t = state.clock.elapsedTime;
     const travel = p * TRAVEL_MAX;
+    travelRef.current = travel;
     const loopOffset = travel % SEGMENT;
     const cityReveal = getCloudCityBlend(p);
     const blackPhase = getCityBlackPhase(p);
@@ -298,23 +297,20 @@ export default function CityWorld() {
       }
     }
 
-    const floorScroll = (travel * 0.08) % 1;
-    floorLayersRef.current.forEach((mesh, i) => {
-      if (mesh) {
-        mesh.position.z = -48 - i * 0.35 - floorScroll * 2 - (travel * 0.02) % 2;
-      }
-    });
+    const floorScroll = (travel * 0.02) % 2;
+    const reflectorActive = blackPhase > 0.55;
 
-    floorLayerMats.current.forEach((mat, i) => {
-      mat.color.copy(BLACK_VOID);
-      mat.opacity = (0.98 - i * 0.06) * (0.15 + blackPhase * 0.85);
-      mat.map = null;
-      mat.needsUpdate = true;
-    });
+    if (simpleFloorRef.current) {
+      simpleFloorRef.current.visible = cityReveal > 0.05 && !reflectorActive;
+      simpleFloorRef.current.position.z = -48 - floorScroll;
+      simpleFloorMat.current.opacity = 0.12 + blackPhase * 0.84;
+    }
 
     if (gridRef.current) {
-      gridRef.current.position.z = -(travel * 0.35) % 8;
-      gridMat.current.opacity = 0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4);
+      const showGrid = cityReveal > 0.1 && blackPhase < 0.28 && fireProgress < 0.35;
+      gridRef.current.visible = showGrid;
+      gridRef.current.position.z = -30 - (travel * 0.35) % 8;
+      gridMat.current.opacity = 0.08 * (1 - blackPhase) * (1 - fireProgress * 0.4);
       lerpColor(gridMat.current.color, CYBER_GREEN.grid, BLACK_VOID, blackPhase);
     }
 
@@ -377,21 +373,17 @@ export default function CityWorld() {
         <planeGeometry args={[56, 1.8]} />
       </mesh>
 
-      {Array.from({ length: FLOOR_LAYER_COUNT }).map((_, i) => (
-        <mesh
-          key={`floor-${i}`}
-          ref={(el) => {
-            if (el) floorLayersRef.current[i] = el;
-          }}
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, -2.26 + i * 0.002, -48 - i * 0.35]}
-          material={floorLayerMats.current[i]}
-        >
-          <planeGeometry args={[56, 260]} />
-        </mesh>
-      ))}
+      <mesh
+        ref={simpleFloorRef}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -2.26, -48]}
+        material={simpleFloorMat.current}
+        visible={false}
+      >
+        <planeGeometry args={[56, 260]} />
+      </mesh>
 
-      <FloorReflection />
+      <FloorReflection travelRef={travelRef} />
 
       <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.24, -30]} material={gridMat.current}>
         <planeGeometry args={[14, 260, 1, 52]} />

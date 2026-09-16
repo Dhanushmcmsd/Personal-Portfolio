@@ -203,36 +203,24 @@ canvas {
   color: #722f37;
 }
 
-.hero-gold-outline {
-  text-shadow:
-    1px 0 #d4af37,
-    -1px 0 #d4af37,
-    0 1px #d4af37,
-    0 -1px #d4af37,
-    2px 0 #a8841f,
-    -2px 0 #a8841f,
-    0 2px #a8841f,
-    0 -2px #a8841f,
-    0 0 14px rgba(255, 214, 120, 0.18);
-}
-
 .hero-name-text {
   position: relative;
-  font-family: var(--font-name), "Stardom", serif;
-  font-weight: 500;
-  color: #39ff14;
-  letter-spacing: 0.16em;
+  font-family: var(--font-display), "Archivo Black", sans-serif;
+  font-weight: 400;
+  color: #0a0a0a;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
 .hero-eyebrow-text,
 .hero-body-text {
   position: relative;
   font-family: var(--font-hero-body), "Teko", sans-serif;
-  font-weight: 500;
-  color: #39ff14;
-  letter-spacing: 0.12em;
+  font-weight: 300;
+  color: #0a0a0a;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -256,13 +244,10 @@ canvas {
   12% {
     transform: translate(-1px, 0);
     text-shadow:
-      1px 0 #d4af37,
-      -1px 0 #d4af37,
-      0 1px #d4af37,
-      0 -1px #d4af37,
-      3px 0 rgba(212, 175, 55, 0.55),
-      -3px 0 rgba(255, 214, 120, 0.45),
-      0 0 14px rgba(255, 214, 120, 0.28);
+      1px 0 rgba(10, 10, 10, 0.85),
+      -1px 0 rgba(10, 10, 10, 0.85),
+      0 1px rgba(255, 255, 255, 0.25),
+      0 -1px rgba(255, 255, 255, 0.25);
   }
   24% {
     transform: translate(1px, -1px);
@@ -418,5 +403,58 @@ canvas {
   }
   75% {
     filter: hue-rotate(-6deg);
+  }
+}
+
+html,
+body,
+a,
+button,
+input,
+textarea,
+select,
+label,
+[role="button"] {
+  cursor: none !important;
+}
+
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 99999;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.custom-cursor img {
+  width: 22px;
+  height: auto;
+  transform: translate(-1px, -1px);
+  image-rendering: pixelated;
+}
+
+.cursor-click-burst {
+  position: fixed;
+  z-index: 99998;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: cursorBurst 0.42s ease-out forwards;
+}
+
+.cursor-click-burst img {
+  width: 30px;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+@keyframes cursorBurst {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.12);
   }
 }

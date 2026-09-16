@@ -162,17 +162,17 @@ export default function OverlayUI() {
         className="absolute inset-0 flex flex-col justify-center px-6 md:px-16"
         style={{ opacity: 1 }}
       >
-        <p className="hero-eyebrow-text hero-gold-outline text-[13px] md:text-[15px] opacity-90">
+        <p className="hero-eyebrow-text text-[13px] md:text-[15px] opacity-80">
           {hero.eyebrow}
         </p>
-        <h1 className="hero-name-text hero-gold-outline mt-6 max-w-full text-[clamp(1.55rem,5.8vw,5.8rem)] leading-none">
+        <h1 className="hero-name-text mt-6 max-w-full text-[clamp(1.55rem,5.8vw,5.8rem)] leading-none">
           {person.displayName}
         </h1>
-        <p className="hero-body-text hero-gold-outline mt-8 max-w-2xl text-xl md:text-2xl">{hero.title}</p>
-        <p className="hero-body-text hero-gold-outline mt-4 max-w-2xl text-sm md:text-base opacity-95">
+        <p className="hero-body-text mt-8 max-w-2xl text-xl md:text-2xl">{hero.title}</p>
+        <p className="hero-body-text mt-4 max-w-2xl text-sm md:text-base opacity-90">
           {hero.subtitle}
         </p>
-        <p className="hero-body-text hero-gold-outline mt-16 text-[13px] md:text-[15px] opacity-75">
+        <p className="hero-body-text mt-16 text-[13px] md:text-[15px] opacity-70">
           {hero.scrollLabel} ↓
         </p>
       </div>

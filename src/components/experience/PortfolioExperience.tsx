@@ -6,6 +6,7 @@ import OverlayUI from "./overlay/OverlayUI";
 import Navigation from "./Navigation";
 import LoadingOverlay from "./LoadingOverlay";
 import ProjectSheet from "./ProjectSheet";
+import CustomCursor from "./CustomCursor";
 
 const ExperienceCanvas = dynamic(() => import("./ExperienceCanvas"), {
   ssr: false,
@@ -16,6 +17,7 @@ export default function PortfolioExperience() {
   return (
     <>
       <LoadingOverlay />
+      <CustomCursor />
       <Navigation />
       <ExperienceCanvas />
       <OverlayUI />
