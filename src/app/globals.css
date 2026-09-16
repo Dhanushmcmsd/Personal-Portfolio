@@ -3,8 +3,8 @@
 @theme {
   --color-bg: #06080B;
   --color-fg: #F4F1EA;
-  --color-accent: #00E5FF;
-  --color-accent-secondary: #8B5CFF;
+  --color-accent: #FF4500;
+  --color-accent-secondary: #1A0033;
   --font-display: "Archivo Black", sans-serif;
   --font-body: "DM Sans", sans-serif;
   --font-experience: "Plus Jakarta Sans", sans-serif;
@@ -204,7 +204,7 @@ canvas {
   color: #722f37;
 }
 
-.experience-glitch-bg {
+.experience-glow-panel {
   position: absolute;
   left: 50%;
   top: 12%;
@@ -219,52 +219,17 @@ canvas {
   clip-path: inset(
     calc((1 - var(--exp-reveal)) * 100%) 0 calc(var(--exp-scroll-away) * 35%) 0
   );
-  background:
-    repeating-linear-gradient(
-      0deg,
-      rgba(140, 180, 255, 0.04) 0px,
-      rgba(140, 180, 255, 0.04) 1px,
-      transparent 1px,
-      transparent 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(180, 140, 255, 0.035) 0px,
-      rgba(180, 140, 255, 0.035) 1px,
-      transparent 1px,
-      transparent 6px
-    ),
-    linear-gradient(
-      115deg,
-      rgba(120, 200, 255, calc(var(--exp-reveal) * 0.12)) 0%,
-      rgba(160, 120, 255, calc(var(--exp-reveal) * 0.1)) 45%,
-      rgba(100, 180, 255, calc(var(--exp-reveal) * 0.08)) 100%
-    );
-  border: 1px solid rgba(160, 190, 255, calc(var(--exp-reveal) * 0.22));
+  background: linear-gradient(
+    165deg,
+    rgba(26, 0, 51, calc(0.94 * var(--exp-reveal))) 0%,
+    rgba(26, 0, 51, calc(0.86 * var(--exp-reveal))) 100%
+  );
+  border: 1px solid rgba(255, 69, 0, calc(0.45 * var(--exp-reveal)));
+  border-radius: 4px;
   box-shadow:
-    inset 0 0 40px rgba(130, 170, 255, calc(var(--exp-reveal) * 0.08)),
-    0 0 24px rgba(170, 130, 255, calc(var(--exp-reveal) * 0.06));
-  animation: experienceBgGlitch 2.8s steps(2, end) infinite;
-}
-
-@keyframes experienceBgGlitch {
-  0%,
-  100% {
-    filter: none;
-  }
-  20% {
-    filter: hue-rotate(4deg) saturate(1.15);
-    transform: translateX(-50%) translateY(calc(var(--exp-scroll-away) * 120px)) translateX(-2px)
-      scale(calc(0.92 + var(--exp-reveal) * 0.08));
-  }
-  40% {
-    filter: hue-rotate(-3deg);
-    transform: translateX(-50%) translateY(calc(var(--exp-scroll-away) * 120px)) translateX(2px)
-      scale(calc(0.92 + var(--exp-reveal) * 0.08));
-  }
-  60% {
-    filter: contrast(1.08);
-  }
+    0 0 32px rgba(255, 69, 0, calc(0.35 * var(--exp-reveal))),
+    0 0 72px rgba(255, 69, 0, calc(0.18 * var(--exp-reveal))),
+    inset 0 0 48px rgba(255, 69, 0, calc(0.1 * var(--exp-reveal)));
 }
 
 .section-experience .experience-content {
@@ -278,65 +243,74 @@ canvas {
 .section-experience .experience-company,
 .section-experience .experience-meta,
 .section-experience .experience-detail {
-  color: #0a0a0a;
-  letter-spacing: -0.01em;
+  color: #ff4500;
+  letter-spacing: -0.015em;
   text-shadow:
-    0 0 6px rgba(255, 210, 80, 0.65),
-    0 0 16px rgba(255, 190, 50, 0.45),
-    0 0 28px rgba(255, 170, 30, 0.28);
+    0 0 8px rgba(255, 69, 0, 0.75),
+    0 0 20px rgba(255, 69, 0, 0.45),
+    0 0 36px rgba(255, 69, 0, 0.25);
 }
 
 .section-experience .experience-heading {
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
 }
 
 .section-experience .experience-role {
-  font-weight: 600;
+  font-weight: 800;
+  line-height: 1.05;
 }
 
 .section-experience .experience-company {
-  font-weight: 500;
-  opacity: 0.92;
+  font-weight: 700;
+  opacity: 0.95;
 }
 
 .section-experience .experience-meta {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-weight: 500;
-  font-size: 0.8em;
-  opacity: 0.78;
+  font-weight: 700;
+  font-size: 0.82em;
+  opacity: 0.82;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .section-experience .experience-detail {
-  font-weight: 400;
-  opacity: 0.88;
+  font-weight: 700;
+  opacity: 0.9;
+  line-height: 1.45;
+}
+
+.section-experience .experience-entry {
+  transform-origin: left center;
 }
 
 .section-experience .experience-content::before {
   content: "";
   position: absolute;
-  inset: -20px -16px;
+  inset: -24px -20px;
   z-index: -1;
   pointer-events: none;
   background: radial-gradient(
-    ellipse 70% 50% at 50% 50%,
-    rgba(255, 214, 120, 0.08) 0%,
-    rgba(255, 200, 80, 0.04) 45%,
-    transparent 70%
+    ellipse 75% 55% at 50% 50%,
+    rgba(255, 69, 0, 0.16) 0%,
+    rgba(255, 69, 0, 0.08) 45%,
+    transparent 72%
   );
-  animation: experienceGoldFlow 6s ease-in-out infinite;
-  filter: blur(6px);
-  opacity: 0.7;
+  animation: experienceOrangeGlow 5s ease-in-out infinite;
+  filter: blur(8px);
+  opacity: 0.85;
 }
 
-@keyframes experienceGoldFlow {
+@keyframes experienceOrangeGlow {
   0%,
   100% {
-    transform: translateX(-8%) scale(1);
-    opacity: 0.75;
+    transform: translateX(-6%) scale(1);
+    opacity: 0.8;
   }
   50% {
-    transform: translateX(8%) scale(1.06);
+    transform: translateX(6%) scale(1.05);
     opacity: 1;
   }
 }
@@ -348,11 +322,11 @@ canvas {
 .section-experience.section-dark-text p,
 .section-experience.section-dark-text li,
 .section-experience.section-dark-text span {
-  color: #0a0a0a;
+  color: #ff4500;
   text-shadow:
-    0 0 6px rgba(255, 210, 80, 0.65),
-    0 0 16px rgba(255, 190, 50, 0.45),
-    0 0 28px rgba(255, 170, 30, 0.28);
+    0 0 8px rgba(255, 69, 0, 0.75),
+    0 0 20px rgba(255, 69, 0, 0.45),
+    0 0 36px rgba(255, 69, 0, 0.25);
 }
 
 .experience-note {
@@ -360,12 +334,13 @@ canvas {
   top: 50%;
   width: min(240px, 30vw);
   padding: 1.15rem 1.25rem;
-  background: linear-gradient(148deg, #f9f5ec 0%, #ebe3d4 55%, #e0d8c8 100%);
-  border: 1px solid rgba(114, 47, 55, 0.22);
+  background: linear-gradient(148deg, #ff5722 0%, #ff4500 55%, #e63e00 100%);
+  border: 1px solid rgba(26, 0, 51, 0.35);
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.65);
-  color: #101010;
+    0 10px 28px rgba(255, 69, 0, 0.28),
+    0 0 24px rgba(255, 69, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  color: #1a0033;
   pointer-events: none;
   z-index: 5;
   transform-origin: center center;

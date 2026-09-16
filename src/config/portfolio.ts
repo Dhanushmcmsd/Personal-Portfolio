@@ -24,10 +24,10 @@ export const PORTFOLIO_CONFIG = {
   visual: {
     background: "#06080B",
     foreground: "#F4F1EA",
-    accent: "#00E5FF",
-    accentSecondary: "#8B5CFF",
-    panel: "#0D1117",
-    grid: "#15313B",
+    accent: "#FF4500",
+    accentSecondary: "#1A0033",
+    panel: "#1A0033",
+    grid: "#FF4500",
     glow: true,
   },
 

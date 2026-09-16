@@ -37,6 +37,8 @@ export default function OverlayUI() {
   const projectCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const experienceRef = useRef<HTMLDivElement>(null);
   const experienceBgRef = useRef<HTMLDivElement>(null);
+  const expHeadingRef = useRef<HTMLHeadingElement>(null);
+  const expEntryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const aboutRef = useRef<HTMLDivElement>(null);
   const aboutPaperRef = useRef<HTMLDivElement>(null);
   const aboutPhotoRef = useRef<HTMLDivElement>(null);
@@ -95,8 +97,32 @@ export default function OverlayUI() {
           "--exp-scroll-away",
           String(smootherstep(0.55, 1, expLocal))
         );
-        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal * 0.65);
+        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal);
       }
+
+      const headingReveal = smootherstep(0.04, 0.26, expLocal);
+      const headingExit = 1 - smootherstep(0.68, 0.94, expLocal);
+      setEl(
+        expHeadingRef.current,
+        expOpacity * headingReveal * headingExit,
+        `translate3d(0, ${(1 - headingReveal) * 36}px, 0) scale(${0.9 + headingReveal * 0.1})`
+      );
+
+      experience.forEach((_, i) => {
+        const entry = expEntryRefs.current[i];
+        if (!entry) return;
+        const stagger = 0.12 + i * 0.1;
+        const enter = smootherstep(stagger, stagger + 0.24, expLocal);
+        const exit = 1 - smootherstep(0.62 + i * 0.05, 0.94, expLocal);
+        const life = expOpacity * enter * exit;
+        const slideY = (1 - enter) * 44 + exit * 28;
+        const slideX = (1 - enter) * 32;
+        setEl(
+          entry,
+          life,
+          `translate3d(${slideX}px, ${slideY}px, 0) scale(${0.88 + enter * 0.12})`
+        );
+      });
 
       education.forEach((_, i) => {
         const note = eduNoteRefs.current[i];
@@ -266,21 +292,34 @@ export default function OverlayUI() {
       >
         <div
           ref={experienceBgRef}
-          className="experience-glitch-bg"
+          className="experience-glow-panel"
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
         <div className="experience-content relative z-10 mx-auto w-full max-w-2xl text-center">
-          <h2 className="experience-heading text-4xl font-semibold md:text-5xl">Experience</h2>
+          <h2
+            ref={expHeadingRef}
+            className="experience-heading text-4xl font-extrabold md:text-5xl"
+            style={{ opacity: 0 }}
+          >
+            Experience
+          </h2>
           <div className="mt-6 space-y-6 text-left">
-            {experience.map((job) => (
-              <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-5">
-                <p className="experience-meta text-sm font-medium md:text-base">{job.period}</p>
-                <h3 className="experience-role mt-1 text-2xl font-semibold md:text-3xl">{job.role}</h3>
-                <p className="experience-company text-lg font-medium">{job.company}</p>
+            {experience.map((job, i) => (
+              <div
+                key={job.company + job.role}
+                ref={(el) => {
+                  expEntryRefs.current[i] = el;
+                }}
+                className="experience-entry border-l-4 border-[#FF4500]/70 pl-5"
+                style={{ opacity: 0 }}
+              >
+                <p className="experience-meta text-sm font-bold md:text-base">{job.period}</p>
+                <h3 className="experience-role mt-1 text-2xl font-extrabold md:text-3xl">{job.role}</h3>
+                <p className="experience-company text-lg font-bold">{job.company}</p>
                 <ul className="mt-2 space-y-1.5">
                   {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="experience-detail text-sm leading-relaxed md:text-base">
+                    <li key={h} className="experience-detail text-sm font-bold leading-relaxed md:text-base">
                       {h}
                     </li>
                   ))}
@@ -299,13 +338,13 @@ export default function OverlayUI() {
             className={`experience-note ${i % 2 === 0 ? "experience-note-left" : "experience-note-right"}`}
             style={{ opacity: 0 }}
           >
-            <p className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-70">
+            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider opacity-85">
               {edu.period}
             </p>
-            <p className="mt-2 text-sm font-bold leading-snug md:text-base">{edu.degree}</p>
-            <p className="mt-1 text-xs font-bold opacity-85 md:text-sm">{edu.school}</p>
+            <p className="mt-2 text-sm font-extrabold leading-snug md:text-base">{edu.degree}</p>
+            <p className="mt-1 text-xs font-bold opacity-90 md:text-sm">{edu.school}</p>
             {edu.gpa ? (
-              <p className="mt-2 font-mono text-[10px] font-bold opacity-70">{edu.gpa}</p>
+              <p className="mt-2 font-mono text-[10px] font-bold opacity-80">{edu.gpa}</p>
             ) : null}
           </div>
         ))}
