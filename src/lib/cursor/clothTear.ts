@@ -140,51 +140,53 @@ export function punchFeatheredHole(
   ctx.restore();
 }
 
-export function drawCursorGlow(
+export type RevealOutlinePoint = {
+  x: number;
+  y: number;
+  radius: number;
+  wobble?: number;
+  alpha?: number;
+};
+
+/** Stroke-only gold/orange outline along each reveal blob (cursor + trail). */
+export function drawRevealOutline(
   ctx: CanvasRenderingContext2D,
-  cx: number,
-  cy: number,
-  radius: number,
-  opacity: number,
-  wobble = 0
+  points: RevealOutlinePoint[],
+  opacity: number
 ) {
+  if (!points.length) return;
+
   ctx.save();
   ctx.globalAlpha = opacity;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
 
-  ctx.filter = "blur(14px)";
-  traceSplashPath(ctx, cx, cy, radius * 1.32, wobble + 0.15);
-  ctx.fillStyle = "rgba(255, 110, 0, 0.28)";
-  ctx.fill();
+  for (const point of points) {
+    const a = point.alpha ?? 1;
+    const wobble = point.wobble ?? 0;
+    const r = point.radius;
 
-  ctx.filter = "blur(9px)";
-  traceSplashPath(ctx, cx, cy, radius * 1.14, wobble + 0.35);
-  ctx.fillStyle = "rgba(255, 165, 0, 0.38)";
-  ctx.fill();
+    ctx.filter = "blur(5px)";
+    traceSplashPath(ctx, point.x, point.y, r * 1.03, wobble);
+    ctx.strokeStyle = `rgba(255, 120, 0, ${0.32 * a})`;
+    ctx.lineWidth = 4;
+    ctx.stroke();
 
-  ctx.filter = "blur(5px)";
-  traceSplashPath(ctx, cx, cy, radius * 1.02, wobble);
-  ctx.fillStyle = "rgba(255, 210, 80, 0.42)";
-  ctx.fill();
+    ctx.filter = "blur(2px)";
+    traceSplashPath(ctx, point.x, point.y, r * 1.015, wobble);
+    ctx.strokeStyle = `rgba(255, 180, 50, ${0.5 * a})`;
+    ctx.lineWidth = 2.6;
+    ctx.stroke();
 
-  ctx.filter = "blur(2px)";
-  traceSplashPath(ctx, cx, cy, radius * 0.9, wobble - 0.2);
-  ctx.fillStyle = "rgba(255, 235, 160, 0.32)";
-  ctx.fill();
-
-  ctx.filter = "none";
-  traceSplashPath(ctx, cx, cy, radius * 1.06, wobble + 0.1);
-  ctx.strokeStyle = "rgba(255, 215, 0, 0.55)";
-  ctx.lineWidth = 2;
-  ctx.shadowColor = "rgba(255, 140, 0, 0.75)";
-  ctx.shadowBlur = 12;
-  ctx.stroke();
-
-  traceSplashPath(ctx, cx, cy, radius * 1.12, wobble + 0.25);
-  ctx.strokeStyle = "rgba(255, 120, 0, 0.22)";
-  ctx.lineWidth = 4;
-  ctx.shadowBlur = 20;
-  ctx.shadowColor = "rgba(255, 100, 0, 0.45)";
-  ctx.stroke();
+    ctx.filter = "none";
+    traceSplashPath(ctx, point.x, point.y, r, wobble);
+    ctx.strokeStyle = `rgba(255, 215, 0, ${0.9 * a})`;
+    ctx.lineWidth = 1.6;
+    ctx.shadowColor = "rgba(255, 140, 0, 0.75)";
+    ctx.shadowBlur = 8;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
 
   ctx.restore();
 }

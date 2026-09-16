@@ -5,8 +5,8 @@ import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { inverseRangeProgress, TIMELINE } from "@/lib/scroll/timeline";
 import {
   drawClothTearFrame,
-  drawCursorGlow,
   drawFeatheredVideoBlob,
+  drawRevealOutline,
   punchFeatheredHole,
 } from "@/lib/cursor/clothTear";
 
@@ -299,9 +299,22 @@ export default function CursorImageReveal() {
 
         drawBlueMask(w, h, cx, cy);
 
-        if (pointerInside) {
-          drawCursorGlow(glowCtx, cx, cy, currentRadius, scrollFade * 0.9, time);
-        }
+        const outlinePoints = [
+          ...trail.map((point) => {
+            const life = 1 - point.age / TRAIL_MAX;
+            return {
+              x: point.x,
+              y: point.y,
+              radius: point.r * (0.6 + life * 0.45),
+              wobble: time + point.age * 0.12,
+              alpha: life * life,
+            };
+          }),
+          ...(pointerInside
+            ? [{ x: cx, y: cy, radius: currentRadius, wobble: time, alpha: 1 }]
+            : []),
+        ];
+        drawRevealOutline(glowCtx, outlinePoints, scrollFade * 0.92);
 
         updateHint(cx, cy, scrollFade);
       }

@@ -20,12 +20,25 @@ type JobCard = (typeof PORTFOLIO_CONFIG.experience)[number] & { kind: "job" };
 type EduCard = (typeof PORTFOLIO_CONFIG.education)[number] & { kind: "edu" };
 type CarouselCard = JobCard | EduCard;
 
+type LoopedCard = CarouselCard & { sourceIndex: number };
+
 function padIndex(n: number) {
   return String(n + 1).padStart(2, "0");
 }
 
+function loopSegmentWidth(cardCount: number) {
+  return cardCount * CARD_WIDTH + Math.max(0, cardCount - 1) * CARD_GAP;
+}
+
+function wrapDragX(x: number, segment: number) {
+  if (segment <= 0) return x;
+  if (x > -segment * 0.5) return x - segment;
+  if (x < -segment * 2.5) return x + segment;
+  return x;
+}
+
 type ExperienceCardProps = {
-  card: CarouselCard;
+  card: LoopedCard;
   index: number;
   dragX: MotionValue<number>;
   dragTilt: MotionValue<number>;
@@ -45,7 +58,7 @@ function ExperienceCard({
   containerWidth,
   enterProgress,
 }: ExperienceCardProps) {
-  const stagger = Math.min(1, Math.max(0, enterProgress - index * 0.08) / 0.35);
+  const stagger = Math.min(1, Math.max(0, enterProgress - card.sourceIndex * 0.08) / 0.35);
   const enterY = (1 - stagger) * 48;
   const enterScale = 0.9 + stagger * 0.1;
 
@@ -79,7 +92,7 @@ function ExperienceCard({
       }}
     >
       <motion.div className="experience-card__inner" style={{ transform: cardTransform }}>
-        <span className="experience-card__index">{padIndex(index)}</span>
+        <span className="experience-card__index">{padIndex(card.sourceIndex)}</span>
 
         {card.kind === "job" ? (
           <>
@@ -113,12 +126,13 @@ export default function ExperienceCarousel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
-  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
   const dragX = useMotionValue(0);
   const dragTilt = useMotionValue(0);
   const dragDepth = useMotionValue(0);
   const dragZoom = useMotionValue(1);
-  const cards = useMemo<CarouselCard[]>(
+  const loopInitialized = useRef(false);
+
+  const baseCards = useMemo<CarouselCard[]>(
     () => [
       ...PORTFOLIO_CONFIG.experience.map((job) => ({ ...job, kind: "job" as const })),
       ...PORTFOLIO_CONFIG.education.map((edu) => ({ ...edu, kind: "edu" as const })),
@@ -126,22 +140,33 @@ export default function ExperienceCarousel() {
     []
   );
 
+  const loopSegment = loopSegmentWidth(baseCards.length);
+
+  const loopedCards = useMemo<LoopedCard[]>(
+    () =>
+      Array.from({ length: 3 }, () =>
+        baseCards.map((card, sourceIndex) => ({ ...card, sourceIndex }))
+      ).flat(),
+    [baseCards]
+  );
+
   const measure = useCallback(() => {
     const container = containerRef.current;
-    const track = trackRef.current;
-    if (!container || !track) return;
-    const width = container.clientWidth;
-    setContainerWidth(width);
-    const overflow = track.scrollWidth - width;
-    const left = overflow > 0 ? -overflow : 0;
-    setConstraints({ left, right: 0 });
+    if (!container) return;
+    setContainerWidth(container.clientWidth);
   }, []);
+
+  useEffect(() => {
+    if (loopSegment <= 0 || loopInitialized.current) return;
+    dragX.set(-loopSegment);
+    loopInitialized.current = true;
+  }, [dragX, loopSegment]);
 
   useEffect(() => {
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [measure, cards.length]);
+  }, [measure, loopedCards.length]);
 
   useEffect(() => {
     if (enterProgress <= 0.02) return;
@@ -171,6 +196,11 @@ export default function ExperienceCarousel() {
     };
   }, []);
 
+  const applyLoopWrap = useCallback(() => {
+    const wrapped = wrapDragX(dragX.get(), loopSegment);
+    if (wrapped !== dragX.get()) dragX.set(wrapped);
+  }, [dragX, loopSegment]);
+
   const stopVerticalScroll = useCallback((event: React.PointerEvent | React.TouchEvent) => {
     event.stopPropagation();
   }, []);
@@ -182,23 +212,24 @@ export default function ExperienceCarousel() {
       dragTilt.set(tilt);
       dragDepth.set(Math.min(1, v * 0.0005));
       dragZoom.set(1 + Math.min(0.12, v * 0.00009));
+      applyLoopWrap();
     },
-    [dragDepth, dragTilt, dragZoom]
+    [applyLoopWrap, dragDepth, dragTilt, dragZoom]
   );
 
   const onDragEnd = useCallback(
     (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
       const velocity = info.velocity.x;
-      const current = dragX.get();
-      const projected = current + velocity * 0.22;
-      const clamped = Math.max(constraints.left, Math.min(constraints.right, projected));
+      let current = dragX.get();
+      current = wrapDragX(current + velocity * 0.22, loopSegment);
 
-      animate(dragX, clamped, {
+      animate(dragX, current, {
         type: "spring",
         stiffness: 280,
         damping: 32,
         mass: 0.8,
         velocity,
+        onComplete: applyLoopWrap,
       });
 
       animate(dragTilt, 0, {
@@ -222,7 +253,7 @@ export default function ExperienceCarousel() {
         velocity: Math.abs(velocity) * 0.00006,
       });
     },
-    [constraints.left, constraints.right, dragDepth, dragTilt, dragX, dragZoom]
+    [applyLoopWrap, dragDepth, dragTilt, dragX, dragZoom, loopSegment]
   );
 
   return (
@@ -244,16 +275,15 @@ export default function ExperienceCarousel() {
           ref={trackRef}
           className="experience-carousel__track"
           drag="x"
-          dragConstraints={constraints}
           dragElastic={0.12}
           dragMomentum
           style={{ x: dragX, touchAction: "pan-x" }}
           onDrag={onDrag}
           onDragEnd={onDragEnd}
         >
-          {cards.map((card, i) => (
+          {loopedCards.map((card, i) => (
             <ExperienceCard
-              key={`${card.kind}-${i}`}
+              key={`${card.kind}-${card.sourceIndex}-${i}`}
               card={card}
               index={i}
               dragX={dragX}
