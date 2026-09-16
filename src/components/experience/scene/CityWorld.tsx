@@ -4,7 +4,13 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getCityBlackPhase, getCityWhiteFireMaskY, getCityWhiteFireProgress, getCloudCityBlend, SECTION } from "@/lib/scroll/timeline";
+import {
+  getCityBlackPhase,
+  getCityWhiteFireMaskY,
+  getCityWhiteFireProgress,
+  getCloudCityBlend,
+  SECTION,
+} from "@/lib/scroll/timeline";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
@@ -269,6 +275,7 @@ export default function CityWorld() {
     const blackPhase = getCityBlackPhase(p);
     const fireProgress = getCityWhiteFireProgress(p);
     const maskY = getCityWhiteFireMaskY(p);
+    const dimFactor = 1;
 
     if (worldRef.current) {
       worldRef.current.position.z = -travel + loopOffset;
@@ -289,7 +296,7 @@ export default function CityWorld() {
         !inExperience && fireProgress > 0.01 && fireProgress < 0.995;
       fireBandRef.current.position.y = maskY;
       fireBandRef.current.position.z = -30 + (travel * 0.02) % 4;
-      fireBandMat.current.opacity = 0.55 + Math.sin(t * 8) * 0.15;
+      fireBandMat.current.opacity = (0.55 + Math.sin(t * 8) * 0.15) * dimFactor;
       if (fireBandMat.current.map) {
         fireBandMat.current.map.offset.x = t * 0.35;
       }
@@ -303,7 +310,8 @@ export default function CityWorld() {
 
     if (gridRef.current) {
       gridRef.current.position.z = -30 - (travel * 0.35) % 8;
-      gridMat.current.opacity = 0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4);
+      gridMat.current.opacity =
+        0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4) * dimFactor;
       lerpColor(gridMat.current.color, CYBER_GREEN.grid, BLACK_VOID, blackPhase);
     }
 
@@ -314,7 +322,13 @@ export default function CityWorld() {
     }
 
     lerpColor(smokeMat.current.color, CYBER_GREEN.fog, CYBER_WHITE.fog, fireProgress);
-    smokeMat.current.opacity = 0.08 * (1 - fireProgress * 0.5) * (1 - blackPhase * 0.6);
+    smokeMat.current.opacity =
+      0.08 * (1 - fireProgress * 0.5) * (1 - blackPhase * 0.6) * dimFactor;
+
+    greenBuildingMat.current.emissiveIntensity = 0.9 * dimFactor;
+    whiteBuildingMat.current.emissiveIntensity = 0.35 * dimFactor;
+    greenWireMat.current.opacity = 0.2 * dimFactor;
+    whiteWireMat.current.opacity = 0.12 * dimFactor;
 
     if (scene.fog && scene.fog instanceof THREE.Fog) {
       lerpColor(scene.fog.color, new THREE.Color("#06080B"), BLACK_VOID, blackPhase);

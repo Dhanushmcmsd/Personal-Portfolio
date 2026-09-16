@@ -5,6 +5,7 @@ import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { useExperienceStore } from "@/stores/experienceStore";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import AboutStringConnections from "./AboutStringConnections";
+import ExperienceCarousel from "./ExperienceCarousel";
 import {
   computeScrollOverlayTransform,
   exclusiveOpacity,
@@ -37,12 +38,9 @@ export default function OverlayUI() {
   const projectCardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const experienceRef = useRef<HTMLDivElement>(null);
   const experienceBgRef = useRef<HTMLDivElement>(null);
-  const expHeadingRef = useRef<HTMLHeadingElement>(null);
-  const expEntryRefs = useRef<(HTMLDivElement | null)[]>([]);
   const aboutRef = useRef<HTMLDivElement>(null);
   const aboutPaperRef = useRef<HTMLDivElement>(null);
   const aboutPhotoRef = useRef<HTMLDivElement>(null);
-  const eduNoteRefs = useRef<(HTMLDivElement | null)[]>([]);
   const aboutLocalRef = useRef(0);
   const contactRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
@@ -92,53 +90,22 @@ export default function OverlayUI() {
         smootherstep(0, 0.45, expLocal) * (1 - smootherstep(0.72, 1, expLocal));
       const expScrollAway = smootherstep(0.5, 0.96, expLocal);
       const expExitFade = 1 - expScrollAway;
-      const expExitShift = -expScrollAway * 96;
-      setEl(experienceRef.current, expOpacity, `translateY(${(1 - expOpacity) * 28}px)`);
+      const rowEnter = smootherstep(0.04, 0.55, expLocal) * expExitFade;
+      const rowLift = (1 - rowEnter) * 36;
+      const rowScale = 0.94 + rowEnter * 0.06;
+
+      setEl(
+        experienceRef.current,
+        expOpacity,
+        `translateY(${(1 - expOpacity) * 28 + rowLift}px) scale(${rowScale})`,
+        expOpacity > 0.2 ? "auto" : "none"
+      );
+
       if (experienceBgRef.current) {
         experienceBgRef.current.style.setProperty("--exp-reveal", String(expBgReveal));
         experienceBgRef.current.style.setProperty("--exp-scroll-away", String(expScrollAway));
         experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal * expExitFade);
       }
-
-      const headingReveal = smootherstep(0.04, 0.26, expLocal);
-      setEl(
-        expHeadingRef.current,
-        expOpacity * headingReveal * expExitFade,
-        `translate3d(${expExitShift}px, ${(1 - headingReveal) * 36}px, 0) scale(${0.9 + headingReveal * 0.1})`
-      );
-
-      experience.forEach((_, i) => {
-        const entry = expEntryRefs.current[i];
-        if (!entry) return;
-        const stagger = 0.12 + i * 0.1;
-        const enter = smootherstep(stagger, stagger + 0.24, expLocal);
-        const life = expOpacity * enter * expExitFade;
-        const slideY = (1 - enter) * 44;
-        const slideX = (1 - enter) * 32 + expExitShift - i * expScrollAway * 12;
-        setEl(
-          entry,
-          life,
-          `translate3d(${slideX}px, ${slideY}px, 0) scale(${0.88 + enter * 0.12})`
-        );
-      });
-
-      education.forEach((_, i) => {
-        const note = eduNoteRefs.current[i];
-        if (!note) return;
-        const fromLeft = i % 2 === 0;
-        const stagger = i * 0.12;
-        const enter = smootherstep(0.08 + stagger, 0.38 + stagger, expLocal);
-        const life = expOpacity * enter * expExitFade;
-        const enterX = fromLeft ? (1 - enter) * -140 : (1 - enter) * 140;
-        const slideX = enterX + expExitShift - (fromLeft ? 24 : 8);
-        const slideY = (1 - enter) * 50 + expScrollAway * 18;
-        const rot = fromLeft ? -8 + enter * 8 : 8 - enter * 8;
-        setEl(
-          note,
-          life,
-          `translate3d(${slideX}px, ${slideY}px, 0) rotate(${rot}deg) scale(${0.88 + enter * 0.12})`
-        );
-      });
 
       const aboutOpacity = exclusiveOpacity(
         p,
@@ -190,11 +157,10 @@ export default function OverlayUI() {
 
     return () => {
       unsub();
-      scrollEngine.destroy();
     };
   }, []);
 
-  const { person, hero, content, projects, experience, education, skills } = PORTFOLIO_CONFIG;
+  const { person, hero, content, projects, skills } = PORTFOLIO_CONFIG;
 
   return (
     <div className="overlay-ui pointer-events-none fixed inset-0 z-10">
@@ -285,7 +251,7 @@ export default function OverlayUI() {
 
       <div
         ref={experienceRef}
-        className="section-experience section-dark-text absolute inset-0 flex items-center justify-center px-6 py-8 md:px-16"
+        className="section-experience absolute inset-0 flex items-center justify-center px-4 py-8 md:px-10"
         style={{ opacity: 0 }}
       >
         <div
@@ -294,54 +260,9 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
-        <div className="experience-content relative z-10 mx-auto w-full max-w-2xl text-center">
-          <h2
-            ref={expHeadingRef}
-            className="experience-heading text-4xl font-extrabold md:text-5xl"
-            style={{ opacity: 0 }}
-          >
-            Experience
-          </h2>
-          <div className="mt-6 space-y-6 text-left">
-            {experience.map((job, i) => (
-              <div
-                key={job.company + job.role}
-                ref={(el) => {
-                  expEntryRefs.current[i] = el;
-                }}
-                className="experience-entry border-l-4 border-[#FF4500]/70 pl-5"
-                style={{ opacity: 0 }}
-              >
-                <p className="experience-meta text-sm font-bold md:text-base">{job.period}</p>
-                <h3 className="experience-role mt-1 text-2xl font-extrabold md:text-3xl">{job.role}</h3>
-                <p className="experience-company text-lg font-bold">{job.company}</p>
-                <ul className="mt-2 space-y-1.5">
-                  {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="experience-detail text-sm font-bold leading-relaxed md:text-base">
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+        <div className="pointer-events-auto relative z-10 w-full max-w-6xl">
+          <ExperienceCarousel />
         </div>
-
-        {education.map((edu, i) => (
-          <div
-            key={edu.degree}
-            ref={(el) => {
-              eduNoteRefs.current[i] = el;
-            }}
-            className={`experience-note ${i % 2 === 0 ? "experience-note-left" : "experience-note-right"}`}
-            style={{ opacity: 0 }}
-          >
-            <p className="experience-note-period">{edu.period}</p>
-            <p className="experience-note-degree">{edu.degree}</p>
-            <p className="experience-note-school">{edu.school}</p>
-            {edu.gpa ? <p className="experience-note-gpa">{edu.gpa}</p> : null}
-          </div>
-        ))}
       </div>
 
       <AboutStringConnections
@@ -390,7 +311,7 @@ export default function OverlayUI() {
 
       <div
         ref={contactRef}
-        className="section-dark-text absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
+        className="section-contact absolute inset-0 flex flex-col items-center justify-center px-6 text-center"
         style={{ opacity: 0 }}
         onClick={(e) => {
           const opacity = Number(contactRef.current?.style.opacity ?? 0);
@@ -407,7 +328,7 @@ export default function OverlayUI() {
         <div className="pointer-events-auto mt-12 flex flex-col items-center gap-4">
           <a
             href={`mailto:${person.email}`}
-            className="pressable rounded-full border border-[#722F37]/50 bg-white/50 px-8 py-3 font-mono text-xs uppercase tracking-[0.2em] transition-colors hover:border-[#722F37]"
+            className="contact-email-btn pressable rounded-full border px-8 py-3 font-mono text-xs uppercase tracking-[0.2em] transition-colors"
           >
             {person.email}
           </a>

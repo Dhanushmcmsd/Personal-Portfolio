@@ -1,7 +1,6 @@
-type ScrollListener = (progress: number, velocity: number) => void;
+import { SCROLL_LOCK_PROGRESS } from "@/lib/scroll/timeline";
 
-/** Normalized scroll progress where contact section ends (hard lock). */
-export const SCROLL_LOCK_PROGRESS = 1;
+type ScrollListener = (progress: number, velocity: number) => void;
 
 class ScrollEngine {
   target = 0;
@@ -65,7 +64,10 @@ class ScrollEngine {
 
   private onScroll = () => {
     const max = this.getMaxScroll();
-    this.target = Math.max(0, Math.min(SCROLL_LOCK_PROGRESS, window.scrollY / max));
+    this.target = Math.max(
+      0,
+      Math.min(SCROLL_LOCK_PROGRESS, (window.scrollY / max) * SCROLL_LOCK_PROGRESS)
+    );
     this.clampScroll();
   };
 

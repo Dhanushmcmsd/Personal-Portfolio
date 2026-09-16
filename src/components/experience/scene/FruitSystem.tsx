@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { exclusiveOpacity, SECTION } from "@/lib/scroll/timeline";
@@ -17,6 +16,7 @@ export interface Fruit {
   lifetime: number;
   emoji: string;
   eating: boolean;
+  static: boolean;
 }
 
 interface FruitSystemProps {
@@ -50,7 +50,7 @@ export default function FruitSystem({
 
   useFrame((_, delta) => {
     const p = scrollEngine.progress;
-    const active = exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.25;
+    const active = exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.08) > 0.12;
 
     if (!active) {
       startedEatingRef.current.clear();
@@ -75,10 +75,12 @@ export default function FruitSystem({
 
       if (group) group.visible = true;
 
-      fruit.velocity.y -= 1.2 * delta;
-      fruit.position.addScaledVector(fruit.velocity, delta);
-      fruit.rotation.x += delta * 2;
-      fruit.rotation.z += delta * 1.5;
+      if (!fruit.static) {
+        fruit.velocity.y -= 1.2 * delta;
+        fruit.position.addScaledVector(fruit.velocity, delta);
+        fruit.rotation.x += delta * 2;
+        fruit.rotation.z += delta * 1.5;
+      }
       fruit.lifetime -= delta;
 
       if (group) {
@@ -113,26 +115,7 @@ export default function FruitSystem({
             if (el) groupRefs.current.set(fruit.id, el);
             else groupRefs.current.delete(fruit.id);
           }}
-        >
-          <Html
-            center
-            distanceFactor={6}
-            style={{
-              fontSize: "22px",
-              width: "22px",
-              height: "22px",
-              lineHeight: 1,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              pointerEvents: "none",
-              userSelect: "none",
-              opacity: fruit.eating ? Math.max(0, 1 - eatProgress) : 1,
-            }}
-          >
-            {fruit.emoji}
-          </Html>
-        </group>
+        />
       ))}
     </group>
   );

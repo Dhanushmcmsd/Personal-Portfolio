@@ -1,0 +1,271 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  animate,
+  motion,
+  useMotionValue,
+  useTransform,
+  type MotionValue,
+  type PanInfo,
+} from "framer-motion";
+import { PORTFOLIO_CONFIG } from "@/config/portfolio";
+import { scrollEngine } from "@/lib/scroll/scrollEngine";
+import { sectionLocalProgress, smootherstep, SECTION } from "@/lib/scroll/timeline";
+
+const CARD_WIDTH = 380;
+const CARD_GAP = 24;
+
+type JobCard = (typeof PORTFOLIO_CONFIG.experience)[number] & { kind: "job" };
+type EduCard = (typeof PORTFOLIO_CONFIG.education)[number] & { kind: "edu" };
+type CarouselCard = JobCard | EduCard;
+
+function padIndex(n: number) {
+  return String(n + 1).padStart(2, "0");
+}
+
+type ExperienceCardProps = {
+  card: CarouselCard;
+  index: number;
+  dragX: MotionValue<number>;
+  dragTilt: MotionValue<number>;
+  dragDepth: MotionValue<number>;
+  dragZoom: MotionValue<number>;
+  containerWidth: number;
+  enterProgress: number;
+};
+
+function ExperienceCard({
+  card,
+  index,
+  dragX,
+  dragTilt,
+  dragDepth,
+  dragZoom,
+  containerWidth,
+  enterProgress,
+}: ExperienceCardProps) {
+  const stagger = Math.min(1, Math.max(0, enterProgress - index * 0.08) / 0.35);
+  const enterY = (1 - stagger) * 48;
+  const enterScale = 0.9 + stagger * 0.1;
+
+  const cardLeft = index * (CARD_WIDTH + CARD_GAP);
+  const cardTransform = useTransform(
+    [dragX, dragTilt, dragDepth, dragZoom],
+    ([x, tilt, depth, zoom]) => {
+      const cardCenter = cardLeft + CARD_WIDTH * 0.5 + (x as number);
+      const viewCenter = containerWidth * 0.5;
+      const norm = containerWidth > 0 ? (cardCenter - viewCenter) / (containerWidth * 0.5) : 0;
+      const clamped = Math.max(-1.2, Math.min(1.2, norm));
+      const centerWeight = 1 - Math.min(1, Math.abs(clamped));
+      const rotateY = clamped * -38 + (tilt as number) * 1.25;
+      const depthPush = Math.abs(clamped) * 100 + (depth as number) * 65;
+      const translateZ = -depthPush + Math.abs(tilt as number) * 2.8 + centerWeight * 24;
+      const scale =
+        (0.84 + centerWeight * 0.14 - Math.abs(clamped) * 0.11) * enterScale * (zoom as number);
+      const skewX = (tilt as number) * 0.1;
+      const rotateX = (tilt as number) * -0.12 - clamped * 2.2;
+      return `translate3d(0, ${enterY}px, ${translateZ}px) rotateY(${rotateY}deg) rotateX(${rotateX}deg) skewX(${skewX}deg) scale(${scale})`;
+    }
+  );
+
+  return (
+    <article
+      className={`experience-card ${card.kind === "edu" ? "experience-card--edu" : ""}`}
+      style={{
+        width: CARD_WIDTH,
+        minWidth: CARD_WIDTH,
+        opacity: stagger,
+      }}
+    >
+      <motion.div className="experience-card__inner" style={{ transform: cardTransform }}>
+        <span className="experience-card__index">{padIndex(index)}</span>
+
+        {card.kind === "job" ? (
+          <>
+            <p className="experience-card__meta">{card.period}</p>
+            <h3 className="experience-card__title">{card.role}</h3>
+            <p className="experience-card__subtitle">{card.company}</p>
+            <ul className="experience-card__body">
+              {card.highlights.slice(0, 3).map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <>
+            <p className="experience-card__meta">{card.period}</p>
+            <h3 className="experience-card__title">{card.degree}</h3>
+            <p className="experience-card__subtitle">{card.school}</p>
+            {card.gpa ? <p className="experience-card__gpa">{card.gpa}</p> : null}
+          </>
+        )}
+
+        <span className="experience-card__corner experience-card__corner--tl" aria-hidden="true" />
+        <span className="experience-card__corner experience-card__corner--br" aria-hidden="true" />
+      </motion.div>
+    </article>
+  );
+}
+
+export default function ExperienceCarousel() {
+  const [enterProgress, setEnterProgress] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [constraints, setConstraints] = useState({ left: 0, right: 0 });
+  const dragX = useMotionValue(0);
+  const dragTilt = useMotionValue(0);
+  const dragDepth = useMotionValue(0);
+  const dragZoom = useMotionValue(1);
+  const cards = useMemo<CarouselCard[]>(
+    () => [
+      ...PORTFOLIO_CONFIG.experience.map((job) => ({ ...job, kind: "job" as const })),
+      ...PORTFOLIO_CONFIG.education.map((edu) => ({ ...edu, kind: "edu" as const })),
+    ],
+    []
+  );
+
+  const measure = useCallback(() => {
+    const container = containerRef.current;
+    const track = trackRef.current;
+    if (!container || !track) return;
+    const width = container.clientWidth;
+    setContainerWidth(width);
+    const overflow = track.scrollWidth - width;
+    const left = overflow > 0 ? -overflow : 0;
+    setConstraints({ left, right: 0 });
+  }, []);
+
+  useEffect(() => {
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [measure, cards.length]);
+
+  useEffect(() => {
+    if (enterProgress <= 0.02) return;
+    const id = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(id);
+  }, [enterProgress, measure]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [measure]);
+
+  useEffect(() => {
+    scrollEngine.init();
+    const unsub = scrollEngine.subscribe((p) => {
+      const expLocal = sectionLocalProgress(p, SECTION.experience[0], SECTION.experience[1]);
+      const expScrollAway = smootherstep(0.5, 0.96, expLocal);
+      const expExitFade = 1 - expScrollAway;
+      const rowEnter = smootherstep(0.04, 0.55, expLocal) * expExitFade;
+      setEnterProgress(rowEnter);
+    });
+    return () => {
+      unsub();
+    };
+  }, []);
+
+  const stopVerticalScroll = useCallback((event: React.PointerEvent | React.TouchEvent) => {
+    event.stopPropagation();
+  }, []);
+
+  const onDrag = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const v = Math.abs(info.velocity.x);
+      const tilt = Math.max(-20, Math.min(20, info.velocity.x * 0.022));
+      dragTilt.set(tilt);
+      dragDepth.set(Math.min(1, v * 0.0005));
+      dragZoom.set(1 + Math.min(0.12, v * 0.00009));
+    },
+    [dragDepth, dragTilt, dragZoom]
+  );
+
+  const onDragEnd = useCallback(
+    (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+      const velocity = info.velocity.x;
+      const current = dragX.get();
+      const projected = current + velocity * 0.22;
+      const clamped = Math.max(constraints.left, Math.min(constraints.right, projected));
+
+      animate(dragX, clamped, {
+        type: "spring",
+        stiffness: 280,
+        damping: 32,
+        mass: 0.8,
+        velocity,
+      });
+
+      animate(dragTilt, 0, {
+        type: "spring",
+        stiffness: 260,
+        damping: 28,
+        velocity: velocity * 0.012,
+      });
+
+      animate(dragDepth, 0, {
+        type: "spring",
+        stiffness: 220,
+        damping: 26,
+        velocity: Math.abs(velocity) * 0.00035,
+      });
+
+      animate(dragZoom, 1, {
+        type: "spring",
+        stiffness: 240,
+        damping: 28,
+        velocity: Math.abs(velocity) * 0.00006,
+      });
+    },
+    [constraints.left, constraints.right, dragDepth, dragTilt, dragX, dragZoom]
+  );
+
+  return (
+    <div
+      className="experience-carousel"
+      style={{ "--exp-enter": enterProgress } as React.CSSProperties}
+    >
+      <h2 className="experience-carousel__heading">Experience</h2>
+      <p className="experience-carousel__hint">drag to explore →</p>
+
+      <div
+        ref={containerRef}
+        className="experience-carousel__viewport"
+        onPointerDown={stopVerticalScroll}
+        onTouchStart={stopVerticalScroll}
+        onWheel={(event) => event.stopPropagation()}
+      >
+        <motion.div
+          ref={trackRef}
+          className="experience-carousel__track"
+          drag="x"
+          dragConstraints={constraints}
+          dragElastic={0.12}
+          dragMomentum
+          style={{ x: dragX, touchAction: "pan-x" }}
+          onDrag={onDrag}
+          onDragEnd={onDragEnd}
+        >
+          {cards.map((card, i) => (
+            <ExperienceCard
+              key={`${card.kind}-${i}`}
+              card={card}
+              index={i}
+              dragX={dragX}
+              dragTilt={dragTilt}
+              dragDepth={dragDepth}
+              dragZoom={dragZoom}
+              containerWidth={containerWidth}
+              enterProgress={enterProgress}
+            />
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
+}

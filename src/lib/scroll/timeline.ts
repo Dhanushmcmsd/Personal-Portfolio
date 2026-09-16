@@ -1,37 +1,44 @@
 import * as THREE from "three";
 
-export const SCROLL_HEIGHT_VH = 1150;
+/** Extra scroll span so later sections keep duration after hero→work stretch */
+export const SCROLL_LOCK_PROGRESS = 1.17;
+
+export const SCROLL_HEIGHT_VH = Math.round(1150 * SCROLL_LOCK_PROGRESS);
 
 export const TIMELINE = {
   intro: 0,
   hero: 0.05,
   transition: 0.08,
-  vigilance: 0.1,
-  hsn: 0.22,
-  finance: 0.34,
-  python: 0.46,
-  experience: 0.58,
-  about: 0.72,
-  contact: 0.825,
-  end: 1,
+  vigilance: 0.25,
+  hsn: 0.39,
+  finance: 0.51,
+  python: 0.63,
+  experience: 0.75,
+  about: 0.89,
+  contact: 0.98,
+  end: SCROLL_LOCK_PROGRESS,
 } as const;
 
 export const SECTION = {
   hero: [0, 0.08] as const,
-  vigilance: [0.08, 0.2] as const,
-  hsn: [0.2, 0.32] as const,
-  finance: [0.32, 0.44] as const,
-  python: [0.44, 0.56] as const,
-  experience: [0.56, 0.68] as const,
-  about: [0.72, 0.82] as const,
-  contact: [0.825, 1] as const,
+  vigilance: [0.25, 0.37] as const,
+  hsn: [0.37, 0.49] as const,
+  finance: [0.49, 0.61] as const,
+  python: [0.61, 0.73] as const,
+  experience: [0.73, 0.85] as const,
+  about: [0.89, 0.99] as const,
+  contact: [0.98, SCROLL_LOCK_PROGRESS] as const,
 };
 
+function sectionCenter(section: readonly [number, number]) {
+  return (section[0] + section[1]) / 2;
+}
+
 export const NAV_TARGETS: Record<string, number> = {
-  work: TIMELINE.vigilance,
-  about: TIMELINE.about,
-  experience: TIMELINE.experience,
-  contact: TIMELINE.contact,
+  work: sectionCenter(SECTION.vigilance),
+  experience: sectionCenter(SECTION.experience),
+  about: sectionCenter(SECTION.about),
+  contact: sectionCenter(SECTION.contact),
 };
 
 export interface CameraKeyframe {
@@ -44,18 +51,18 @@ export interface CameraKeyframe {
 export const CAMERA_KEYFRAMES: CameraKeyframe[] = [
   { t: 0, position: new THREE.Vector3(0, 2.2, 14), lookAt: new THREE.Vector3(0, 1.5, -2), fov: 54 },
   { t: 0.05, position: new THREE.Vector3(0.1, 1.6, 10), lookAt: new THREE.Vector3(0, 0.8, -4), fov: 50 },
-  { t: 0.1, position: new THREE.Vector3(0.2, 0.9, 4), lookAt: new THREE.Vector3(0, 0.2, -10), fov: 46 },
-  { t: 0.18, position: new THREE.Vector3(0, 0.5, -10), lookAt: new THREE.Vector3(0, 0.06, -18), fov: 42 },
-  { t: 0.24, position: new THREE.Vector3(-0.4, 0.45, -20), lookAt: new THREE.Vector3(0.1, 0.06, -30), fov: 40 },
-  { t: 0.3, position: new THREE.Vector3(0.3, 0.42, -28), lookAt: new THREE.Vector3(-0.1, 0.05, -38), fov: 38 },
-  { t: 0.38, position: new THREE.Vector3(0.5, 0.48, -36), lookAt: new THREE.Vector3(-0.1, 0.06, -46), fov: 38 },
-  { t: 0.44, position: new THREE.Vector3(-0.2, 0.4, -44), lookAt: new THREE.Vector3(0, 0.04, -54), fov: 36 },
-  { t: 0.52, position: new THREE.Vector3(-0.5, 0.46, -52), lookAt: new THREE.Vector3(0.15, 0.06, -62), fov: 36 },
-  { t: 0.58, position: new THREE.Vector3(0, 0.75, -62), lookAt: new THREE.Vector3(0, 0.15, -72), fov: 38 },
-  { t: 0.72, position: new THREE.Vector3(0.2, 0.55, -72), lookAt: new THREE.Vector3(-0.1, 0.1, -82), fov: 36 },
-  { t: 0.82, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
-  { t: 0.925, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
-  { t: 1, position: new THREE.Vector3(0, 0.28, -84), lookAt: new THREE.Vector3(0, -0.05, -92), fov: 30 },
+  { t: 0.25, position: new THREE.Vector3(0.2, 0.9, 4), lookAt: new THREE.Vector3(0, 0.2, -10), fov: 46 },
+  { t: 0.37, position: new THREE.Vector3(0, 0.5, -10), lookAt: new THREE.Vector3(0, 0.06, -18), fov: 42 },
+  { t: 0.41, position: new THREE.Vector3(-0.4, 0.45, -20), lookAt: new THREE.Vector3(0.1, 0.06, -30), fov: 40 },
+  { t: 0.47, position: new THREE.Vector3(0.3, 0.42, -28), lookAt: new THREE.Vector3(-0.1, 0.05, -38), fov: 38 },
+  { t: 0.55, position: new THREE.Vector3(0.5, 0.48, -36), lookAt: new THREE.Vector3(-0.1, 0.06, -46), fov: 38 },
+  { t: 0.61, position: new THREE.Vector3(-0.2, 0.4, -44), lookAt: new THREE.Vector3(0, 0.04, -54), fov: 36 },
+  { t: 0.69, position: new THREE.Vector3(-0.5, 0.46, -52), lookAt: new THREE.Vector3(0.15, 0.06, -62), fov: 36 },
+  { t: 0.75, position: new THREE.Vector3(0, 0.75, -62), lookAt: new THREE.Vector3(0, 0.15, -72), fov: 38 },
+  { t: 0.89, position: new THREE.Vector3(0.2, 0.55, -72), lookAt: new THREE.Vector3(-0.1, 0.1, -82), fov: 36 },
+  { t: 0.99, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
+  { t: 1.095, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
+  { t: SCROLL_LOCK_PROGRESS, position: new THREE.Vector3(0, 0.28, -84), lookAt: new THREE.Vector3(0, -0.05, -92), fov: 30 },
 ];
 
 export function lerp(a: number, b: number, t: number) {
@@ -64,6 +71,10 @@ export function lerp(a: number, b: number, t: number) {
 
 export function clamp01(v: number) {
   return Math.max(0, Math.min(1, v));
+}
+
+export function clampProgress(v: number) {
+  return Math.max(0, Math.min(SCROLL_LOCK_PROGRESS, v));
 }
 
 export function smoothstep(edge0: number, edge1: number, x: number) {
@@ -101,7 +112,7 @@ export function sectionLocalProgress(progress: number, start: number, end: numbe
 }
 
 export function interpolateCamera(progress: number) {
-  const p = clamp01(progress);
+  const p = clampProgress(progress);
   let a = CAMERA_KEYFRAMES[0];
   let b = CAMERA_KEYFRAMES[CAMERA_KEYFRAMES.length - 1];
 
@@ -126,10 +137,10 @@ export function interpolateCamera(progress: number) {
 
 export function getGlitchIntensity(progress: number) {
   const windows = [
-    [0.18, 0.21],
-    [0.3, 0.33],
-    [0.42, 0.45],
-    [0.54, 0.57],
+    [0.35, 0.38],
+    [0.47, 0.5],
+    [0.59, 0.62],
+    [0.71, 0.74],
   ];
 
   let intensity = 0;

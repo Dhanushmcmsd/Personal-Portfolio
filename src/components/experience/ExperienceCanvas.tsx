@@ -15,16 +15,25 @@ export default function ExperienceCanvas() {
   useEffect(() => {
     setDpr(Math.min(2, window.devicePixelRatio || 1));
 
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress = Math.min(100, progress + 12);
+    const durationMs = 3600;
+    const start = performance.now();
+    let raf = 0;
+
+    const tick = () => {
+      const elapsed = performance.now() - start;
+      const progress = Math.min(100, Math.round((elapsed / durationMs) * 100));
       setLoadProgress(progress);
+
       if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => setLoaded(true), 300);
+        window.setTimeout(() => setLoaded(true), 560);
+        return;
       }
-    }, 80);
-    return () => clearInterval(interval);
+
+      raf = requestAnimationFrame(tick);
+    };
+
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [setLoaded, setLoadProgress]);
 
   if (webglFailed) return <WebGLFallback />;

@@ -12,7 +12,7 @@ import CameraRig from "./CameraRig";
 import CityWorld from "./CityWorld";
 import CloudSky from "./CloudSky";
 import HotAirBalloon from "./HotAirBalloon";
-import HeroAsteroids from "./HeroAsteroids";
+import ExperienceFlowMesh from "./ExperienceFlowMesh";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot, { EAT_DURATION_MS, type EatTarget } from "./VirusMascot";
 import FruitSystem, { randomFruitEmoji, screenToWorld, type Fruit } from "./FruitSystem";
@@ -33,32 +33,27 @@ export default function ExperienceScene() {
   const eatStartRef = useRef(0);
   const eatPositionRef = useRef<THREE.Vector3 | null>(null);
   const virusPositionRef = useRef(new THREE.Vector3(0, 0.5, -8));
-  const fruitIdRef = useRef(0);
   const eatingFruitIdRef = useRef<number | null>(null);
   const { camera, size } = useThree();
 
   const spawnFruitAt = useCallback(
-    (clientX: number, clientY: number) => {
+    (clientX: number, clientY: number, id: number) => {
       const p = scrollEngine.progress;
       const contactActive =
-        exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.04) > 0.25;
+        exclusiveOpacity(p, SECTION.contact[0], SECTION.contact[1], 0.08) > 0.12;
       if (!contactActive || eatingFruitIdRef.current !== null) return;
 
       const worldPos = screenToWorld(clientX, clientY, camera, size.width, size.height);
-      const id = fruitIdRef.current++;
       const fruit: Fruit = {
         id,
         position: worldPos.clone(),
-        velocity: new THREE.Vector3(
-          (Math.random() - 0.5) * 0.15,
-          -0.05 - Math.random() * 0.1,
-          (Math.random() - 0.5) * 0.1
-        ),
+        velocity: new THREE.Vector3(),
         rotation: new THREE.Euler(),
         scale: 1,
-        lifetime: 8,
+        lifetime: 12,
         emoji: randomFruitEmoji(),
         eating: false,
+        static: true,
       };
       setFruits((prev) => [...prev, fruit]);
       setFruitTarget(worldPos.clone());
@@ -73,6 +68,7 @@ export default function ExperienceScene() {
     setEatingFruitId(fruit.id);
     setEatProgress(0);
     setFruitTarget(null);
+    useExperienceStore.getState().markFruitEaten(fruit.id);
     setFruits((prev) =>
       prev.map((f) => (f.id === fruit.id ? { ...f, eating: true, velocity: new THREE.Vector3() } : f))
     );
@@ -91,7 +87,7 @@ export default function ExperienceScene() {
   useFrame(() => {
     const drop = useExperienceStore.getState().fruitDropAt;
     if (drop) {
-      spawnFruitAt(drop.clientX, drop.clientY);
+      spawnFruitAt(drop.clientX, drop.clientY, drop.id);
       useExperienceStore.getState().clearFruitDrop();
     }
 
@@ -120,9 +116,9 @@ export default function ExperienceScene() {
 
       <Suspense fallback={null}>
         <CloudSky />
-        <HeroAsteroids />
         <HotAirBalloon />
         <CityWorld />
+        <ExperienceFlowMesh />
 
         {PORTFOLIO_CONFIG.projects.map((project, i) => (
           <ProjectExhibit

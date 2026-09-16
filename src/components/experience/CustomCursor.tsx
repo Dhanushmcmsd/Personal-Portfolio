@@ -1,6 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  CURSOR_DISPLAY_WIDTH,
+  hotspotToOffset,
+  measureCursorHotspot,
+} from "@/lib/cursor/measureHotspot";
 
 type CursorPhase = "default" | "hover" | "click1" | "click2";
 
@@ -24,6 +29,9 @@ export default function CustomCursor() {
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [phase, setPhase] = useState<CursorPhase>("default");
   const [bursts, setBursts] = useState<GlitchBurst[]>([]);
+  const [hotspots, setHotspots] = useState<Record<CursorPhase, { x: number; y: number }> | null>(
+    null
+  );
   const burstId = useRef(0);
   const clickTimers = useRef<number[]>([]);
   const interactiveRef = useRef(false);
@@ -38,6 +46,34 @@ export default function CustomCursor() {
 
   const resolvePhase = useCallback(() => {
     setPhase(interactiveRef.current ? "hover" : "default");
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all(
+      (Object.entries(CURSORS) as [CursorPhase, string][]).map(async ([key, src]) => {
+        const hotspot = await measureCursorHotspot(src);
+        return [key, hotspotToOffset(hotspot)] as const;
+      })
+    )
+      .then((entries) => {
+        if (cancelled) return;
+        setHotspots(Object.fromEntries(entries) as Record<CursorPhase, { x: number; y: number }>);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHotspots({
+          default: { x: 0, y: 0 },
+          hover: { x: 0, y: 0 },
+          click1: { x: 0, y: 0 },
+          click2: { x: 0, y: 0 },
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -74,6 +110,8 @@ export default function CustomCursor() {
     };
   }, [clearClickTimers, resolvePhase]);
 
+  const offset = hotspots?.[phase] ?? { x: 0, y: 0 };
+
   return (
     <>
       <div
@@ -81,7 +119,17 @@ export default function CustomCursor() {
         style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
         aria-hidden="true"
       >
-        <img src={CURSORS[phase]} alt="" draggable={false} />
+        <img
+          src={CURSORS[phase]}
+          alt=""
+          draggable={false}
+          width={CURSOR_DISPLAY_WIDTH}
+          style={{
+            transform: hotspots
+              ? `translate(${-offset.x}px, ${-offset.y}px)`
+              : undefined,
+          }}
+        />
       </div>
 
       {bursts.map((burst) => (

@@ -6,8 +6,8 @@ import { scrollEngine } from "@/lib/scroll/scrollEngine";
 
 const links = [
   { label: "Work", key: "work" },
-  { label: "About", key: "about" },
   { label: "Experience", key: "experience" },
+  { label: "Who I Am", key: "about" },
   { label: "Contact", key: "contact" },
 ];
 
