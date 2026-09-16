@@ -39,6 +39,7 @@ export default function OverlayUI() {
   const experienceBgRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const aboutPaperRef = useRef<HTMLDivElement>(null);
+  const aboutPaperAnchorRef = useRef<HTMLDivElement>(null);
   const aboutPhotoRef = useRef<HTMLDivElement>(null);
   const contactRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
@@ -177,11 +178,11 @@ export default function OverlayUI() {
         className="hero-section absolute inset-0 flex flex-col items-center justify-center px-4 md:px-10"
         style={{ opacity: 1 }}
       >
-        <div className="hero-content w-full max-w-[min(100%,1040px)] text-center">
+        <div className="hero-content w-full max-w-[min(100%,920px)] px-2 text-center">
           <p className="hero-eyebrow-text mx-auto text-[13px] md:text-[15px] opacity-80">
             {hero.eyebrow}
           </p>
-          <h1 className="hero-name-text mx-auto mt-6 w-full text-[clamp(2rem,11vw,7.5rem)] leading-[0.92]">
+          <h1 className="hero-name-text mx-auto mt-6 w-full max-w-[92vw] text-[clamp(1.25rem,4.8vw,4.2rem)] leading-[0.95]">
             {person.displayName}
           </h1>
           <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-xl md:text-3xl">{hero.title}</p>
@@ -240,7 +241,7 @@ export default function OverlayUI() {
 
       <div
         ref={experienceRef}
-        className="section-dark-text absolute inset-0 flex items-center px-6 md:px-16"
+        className="section-experience section-dark-text absolute inset-0 flex items-center justify-center px-6 md:px-16"
         style={{ opacity: 0 }}
       >
         <div
@@ -249,16 +250,16 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
-        <div className="relative z-10 max-w-3xl">
+        <div className="experience-content relative z-10 mx-auto w-full max-w-3xl text-center">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-70">
             Experience
           </p>
           <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl md:text-6xl">
             WHERE I&apos;VE WORKED
           </h2>
-          <div className="mt-12 space-y-10">
+          <div className="mt-12 space-y-10 text-left">
             {experience.map((job) => (
-              <div key={job.company + job.role} className="border-l border-[#722F37]/40 pl-6">
+              <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-6">
                 <p className="font-mono text-xs opacity-70">{job.period}</p>
                 <h3 className="mt-1 text-xl">{job.role}</h3>
                 <p className="text-sm opacity-85">{job.company}</p>
@@ -285,7 +286,7 @@ export default function OverlayUI() {
       </div>
 
       <AboutStringConnections
-        paperRef={aboutPaperRef}
+        paperAnchorRef={aboutPaperAnchorRef}
         photoRef={aboutPhotoRef}
         containerRef={aboutRef}
         active={aboutStringsActive}
@@ -298,6 +299,7 @@ export default function OverlayUI() {
       >
         <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-10 md:grid-cols-2">
           <div ref={aboutPaperRef} className="about-paper-panel" style={{ "--paper-open": 0 } as CSSProperties}>
+            <div ref={aboutPaperAnchorRef} className="about-string-anchor" aria-hidden="true" />
             <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.4rem,8vw,5.5rem)] leading-[0.9]">
               {content.aboutTitle}
             </h2>
@@ -307,8 +309,8 @@ export default function OverlayUI() {
             <p className="mt-6 max-w-xl text-sm leading-relaxed md:text-base opacity-80">
               {content.aboutText}
             </p>
-            <p className="mt-10 font-mono text-[11px] opacity-50">
-              Scroll to explore the city below.
+            <p className="mt-10 font-mono text-[11px] opacity-60">
+              Click to cut the strings.
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               {skills.programming.slice(0, 6).map((s) => (

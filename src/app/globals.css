@@ -205,15 +205,15 @@ canvas {
 
 .experience-glitch-bg {
   position: absolute;
-  left: 4%;
-  right: 28%;
+  left: 50%;
   top: 12%;
   bottom: 14%;
+  width: min(720px, 88%);
   --exp-reveal: 0;
   --exp-scroll-away: 0;
   pointer-events: none;
   z-index: 0;
-  transform: translateY(calc(var(--exp-scroll-away) * 120px))
+  transform: translateX(-50%) translateY(calc(var(--exp-scroll-away) * 120px))
     scale(calc(0.92 + var(--exp-reveal) * 0.08));
   clip-path: inset(
     calc((1 - var(--exp-reveal)) * 100%) 0 calc(var(--exp-scroll-away) * 35%) 0
@@ -253,17 +253,75 @@ canvas {
   }
   20% {
     filter: hue-rotate(4deg) saturate(1.15);
-    transform: translateY(calc(var(--exp-scroll-away) * 120px)) translateX(-2px)
+    transform: translateX(-50%) translateY(calc(var(--exp-scroll-away) * 120px)) translateX(-2px)
       scale(calc(0.92 + var(--exp-reveal) * 0.08));
   }
   40% {
     filter: hue-rotate(-3deg);
-    transform: translateY(calc(var(--exp-scroll-away) * 120px)) translateX(2px)
+    transform: translateX(-50%) translateY(calc(var(--exp-scroll-away) * 120px)) translateX(2px)
       scale(calc(0.92 + var(--exp-reveal) * 0.08));
   }
   60% {
     filter: contrast(1.08);
   }
+}
+
+.section-experience .experience-content {
+  position: relative;
+}
+
+.section-experience .experience-content::before {
+  content: "";
+  position: absolute;
+  inset: -28px -20px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 80% 60% at 50% 50%,
+    rgba(255, 214, 120, 0.22) 0%,
+    rgba(255, 200, 80, 0.1) 40%,
+    transparent 72%
+  );
+  animation: experienceGoldFlow 5s ease-in-out infinite;
+  filter: blur(8px);
+}
+
+@keyframes experienceGoldFlow {
+  0%,
+  100% {
+    transform: translateX(-8%) scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: translateX(8%) scale(1.06);
+    opacity: 1;
+  }
+}
+
+.section-experience.section-dark-text,
+.section-experience.section-dark-text h1,
+.section-experience.section-dark-text h2,
+.section-experience.section-dark-text h3,
+.section-experience.section-dark-text p,
+.section-experience.section-dark-text li,
+.section-experience.section-dark-text span {
+  color: #101010;
+  text-shadow:
+    0 0 10px rgba(255, 214, 120, 0.55),
+    0 0 22px rgba(255, 200, 80, 0.35),
+    0 0 32px rgba(255, 190, 60, 0.2),
+    -0.5px -0.5px 0 rgba(114, 47, 55, 0.35),
+    0.5px 0.5px 0 rgba(114, 47, 55, 0.35);
+}
+
+.about-string-anchor {
+  position: absolute;
+  right: calc(-8px + var(--paper-open, 0) * 8px);
+  top: calc(-8px + var(--paper-open, 0) * 8px);
+  bottom: calc(-8px + var(--paper-open, 0) * 8px);
+  width: 2px;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .about-string-canvas {
@@ -285,11 +343,13 @@ canvas {
   font-family: var(--font-display), "Archivo Black", sans-serif;
   font-weight: 400;
   color: #0a0a0a;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: normal;
   text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 .hero-eyebrow-text,
