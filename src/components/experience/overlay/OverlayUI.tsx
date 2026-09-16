@@ -251,7 +251,7 @@ export default function OverlayUI() {
 
       <div
         ref={experienceRef}
-        className="section-experience absolute inset-0 flex items-center justify-center px-4 py-8 md:px-10"
+        className="section-experience absolute inset-0 flex items-center justify-center px-0 py-8"
         style={{ opacity: 0 }}
       >
         <div
@@ -260,8 +260,7 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
-        <div className="experience-side-vignette" aria-hidden="true" />
-        <div className="pointer-events-auto relative z-10 w-full max-w-6xl">
+        <div className="pointer-events-auto relative z-10 w-full">
           <ExperienceCarousel />
         </div>
       </div>
