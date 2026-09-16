@@ -5,7 +5,6 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { getCityBlackPhase, getCityWhiteFireMaskY, getCityWhiteFireProgress, getCloudCityBlend, SECTION } from "@/lib/scroll/timeline";
-import FloorReflection from "./FloorReflection";
 
 const SEGMENT = 52;
 const TRAVEL_MAX = 130;
@@ -132,7 +131,7 @@ export default function CityWorld() {
   const fireBandRef = useRef<THREE.Mesh>(null);
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
-  const travelRef = useRef(0);
+  const floorRef = useRef<THREE.Mesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const fireBandTex = useMemo(() => makeFireBandTexture(), []);
 
@@ -148,6 +147,14 @@ export default function CityWorld() {
       whiteWindowTex: makeWindowTexture(true),
     };
   }, []);
+
+  const floorMat = useRef(
+    new THREE.MeshBasicMaterial({
+      color: "#000000",
+      transparent: false,
+      depthWrite: true,
+    })
+  );
 
   const greenBuildingMat = useRef(
     new THREE.MeshStandardMaterial({
@@ -257,7 +264,6 @@ export default function CityWorld() {
     const p = scrollEngine.progress;
     const t = state.clock.elapsedTime;
     const travel = p * TRAVEL_MAX;
-    travelRef.current = travel;
     const loopOffset = travel % SEGMENT;
     const cityReveal = getCloudCityBlend(p);
     const blackPhase = getCityBlackPhase(p);
@@ -287,6 +293,12 @@ export default function CityWorld() {
       if (fireBandMat.current.map) {
         fireBandMat.current.map.offset.x = t * 0.35;
       }
+    }
+
+    if (floorRef.current) {
+      const floorScroll = (travel * 0.02) % 2;
+      floorRef.current.visible = cityReveal > 0.05;
+      floorRef.current.position.z = -48 - floorScroll;
     }
 
     if (gridRef.current) {
@@ -354,6 +366,16 @@ export default function CityWorld() {
         <planeGeometry args={[56, 1.8]} />
       </mesh>
 
+      <mesh
+        ref={floorRef}
+        rotation={[-Math.PI / 2, 0, 0]}
+        position={[0, -2.26, -48]}
+        material={floorMat.current}
+        visible={false}
+      >
+        <planeGeometry args={[56, 260]} />
+      </mesh>
+
       <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.24, -30]} material={gridMat.current}>
         <planeGeometry args={[14, 260, 1, 52]} />
       </mesh>
@@ -370,8 +392,6 @@ export default function CityWorld() {
         ))}
       </group>
       </group>
-
-      <FloorReflection worldRef={worldRef} travelRef={travelRef} />
     </>
   );
 }

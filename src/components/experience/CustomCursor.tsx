@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type CursorPhase = "default" | "hover" | "click1" | "click2";
 
-type Burst = { id: number; x: number; y: number };
+type Flame = { id: number; x: number; y: number };
 
 const CURSORS: Record<CursorPhase, string> = {
   default: "/cursor/arrow.png",
@@ -23,8 +23,8 @@ function isInteractiveTarget(target: EventTarget | null) {
 export default function CustomCursor() {
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [phase, setPhase] = useState<CursorPhase>("default");
-  const [bursts, setBursts] = useState<Burst[]>([]);
-  const burstId = useRef(0);
+  const [flames, setFlames] = useState<Flame[]>([]);
+  const flameId = useRef(0);
   const clickTimers = useRef<number[]>([]);
   const interactiveRef = useRef(false);
   const phaseRef = useRef<CursorPhase>("default");
@@ -51,16 +51,16 @@ export default function CustomCursor() {
 
     const onDown = (e: MouseEvent) => {
       clearClickTimers();
-      const id = burstId.current++;
-      setBursts((prev) => [...prev, { id, x: e.clientX, y: e.clientY }]);
+      const id = flameId.current++;
+      setFlames((prev) => [...prev, { id, x: e.clientX, y: e.clientY }]);
       setPhase("click1");
 
       clickTimers.current.push(
         window.setTimeout(() => setPhase("click2"), 100),
         window.setTimeout(() => resolvePhase(), 220),
         window.setTimeout(() => {
-          setBursts((prev) => prev.filter((b) => b.id !== id));
-        }, 450)
+          setFlames((prev) => prev.filter((f) => f.id !== id));
+        }, 520)
       );
     };
 
@@ -84,14 +84,16 @@ export default function CustomCursor() {
         <img src={CURSORS[phase]} alt="" draggable={false} />
       </div>
 
-      {bursts.map((burst) => (
+      {flames.map((flame) => (
         <div
-          key={burst.id}
-          className="cursor-click-burst"
-          style={{ transform: `translate3d(${burst.x}px, ${burst.y}px, 0)` }}
+          key={flame.id}
+          className="cursor-click-flame"
+          style={{ transform: `translate3d(${flame.x}px, ${flame.y}px, 0)` }}
           aria-hidden="true"
         >
-          <img src="/cursor/click-burst.png" alt="" draggable={false} />
+          <span className="cursor-click-flame-outer" />
+          <span className="cursor-click-flame-mid" />
+          <span className="cursor-click-flame-core" />
         </div>
       ))}
     </>

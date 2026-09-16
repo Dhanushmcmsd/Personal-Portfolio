@@ -12,6 +12,7 @@ import CameraRig from "./CameraRig";
 import CityWorld from "./CityWorld";
 import CloudSky from "./CloudSky";
 import HotAirBalloon from "./HotAirBalloon";
+import HeroAsteroids from "./HeroAsteroids";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot, { EAT_DURATION_MS, type EatTarget } from "./VirusMascot";
 import FruitSystem, { randomFruitEmoji, screenToWorld, type Fruit } from "./FruitSystem";
@@ -119,6 +120,7 @@ export default function ExperienceScene() {
 
       <Suspense fallback={null}>
         <CloudSky />
+        <HeroAsteroids />
         <HotAirBalloon />
         <CityWorld />
 

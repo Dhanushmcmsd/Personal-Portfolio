@@ -434,28 +434,86 @@ label,
   image-rendering: pixelated;
 }
 
-.cursor-click-burst {
+.cursor-click-flame {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 99998;
+  width: 0;
+  height: 0;
   pointer-events: none;
   will-change: transform, opacity;
-  animation: cursorBurst 0.45s ease-out forwards;
+  animation: gothicFlameFade 0.52s ease-out forwards;
 }
 
-.cursor-click-burst img {
-  width: 28px;
-  height: auto;
-  transform: translate(-50%, -50%);
-  image-rendering: pixelated;
+.cursor-click-flame-outer,
+.cursor-click-flame-mid,
+.cursor-click-flame-core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -70%);
+  border-radius: 50% 50% 45% 45%;
+  pointer-events: none;
 }
 
-@keyframes cursorBurst {
+.cursor-click-flame-outer {
+  width: 18px;
+  height: 22px;
+  background: radial-gradient(
+    ellipse at 50% 80%,
+    rgba(120, 20, 40, 0.85) 0%,
+    rgba(40, 8, 20, 0.55) 45%,
+    transparent 72%
+  );
+  filter: blur(1px);
+  animation: gothicFlameFlicker 0.52s ease-out forwards;
+}
+
+.cursor-click-flame-mid {
+  width: 10px;
+  height: 14px;
+  background: radial-gradient(
+    ellipse at 50% 85%,
+    rgba(180, 60, 20, 0.9) 0%,
+    rgba(100, 20, 10, 0.5) 55%,
+    transparent 75%
+  );
+  animation: gothicFlameFlicker 0.48s ease-out forwards;
+}
+
+.cursor-click-flame-core {
+  width: 5px;
+  height: 7px;
+  background: radial-gradient(
+    ellipse at 50% 90%,
+    rgba(255, 180, 60, 0.95) 0%,
+    rgba(200, 80, 20, 0.6) 50%,
+    transparent 80%
+  );
+  box-shadow: 0 0 6px rgba(255, 120, 40, 0.55);
+}
+
+@keyframes gothicFlameFade {
   0% {
     opacity: 1;
   }
   100% {
     opacity: 0;
+  }
+}
+
+@keyframes gothicFlameFlicker {
+  0% {
+    transform: translate(-50%, -70%) scale(0.7) skewX(0deg);
+  }
+  30% {
+    transform: translate(-52%, -78%) scale(1) skewX(-6deg);
+  }
+  60% {
+    transform: translate(-48%, -82%) scale(0.92) skewX(5deg);
+  }
+  100% {
+    transform: translate(-50%, -90%) scale(0.55) skewX(0deg);
   }
 }
