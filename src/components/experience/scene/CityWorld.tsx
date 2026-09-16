@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getCityBlackPhase, getCityWhiteFireMaskY, getCityWhiteFireProgress, getCloudCityBlend } from "@/lib/scroll/timeline";
+import { getCityBlackPhase, getCityWhiteFireMaskY, getCityWhiteFireProgress, getCloudCityBlend, SECTION } from "@/lib/scroll/timeline";
 import FloorReflection from "./FloorReflection";
 
 const SEGMENT = 52;
@@ -132,7 +132,6 @@ export default function CityWorld() {
   const fireBandRef = useRef<THREE.Mesh>(null);
   const fogRef = useRef<THREE.Group>(null);
   const gridRef = useRef<THREE.Mesh>(null);
-  const simpleFloorRef = useRef<THREE.Mesh>(null);
   const travelRef = useRef(0);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const fireBandTex = useMemo(() => makeFireBandTexture(), []);
@@ -149,15 +148,6 @@ export default function CityWorld() {
       whiteWindowTex: makeWindowTexture(true),
     };
   }, []);
-
-  const simpleFloorMat = useRef(
-    new THREE.MeshBasicMaterial({
-      color: BLACK_VOID,
-      transparent: true,
-      opacity: 0.96,
-      depthWrite: true,
-    })
-  );
 
   const greenBuildingMat = useRef(
     new THREE.MeshStandardMaterial({
@@ -288,7 +278,9 @@ export default function CityWorld() {
     applyClipAbove(whiteWireMat.current, maskY);
 
     if (fireBandRef.current) {
-      fireBandRef.current.visible = fireProgress > 0.01 && fireProgress < 0.995;
+      const inExperience = p >= SECTION.experience[0] && p <= SECTION.experience[1];
+      fireBandRef.current.visible =
+        !inExperience && fireProgress > 0.01 && fireProgress < 0.995;
       fireBandRef.current.position.y = maskY;
       fireBandRef.current.position.z = -30 + (travel * 0.02) % 4;
       fireBandMat.current.opacity = 0.55 + Math.sin(t * 8) * 0.15;
@@ -297,20 +289,9 @@ export default function CityWorld() {
       }
     }
 
-    const floorScroll = (travel * 0.02) % 2;
-    const reflectorActive = blackPhase > 0.55;
-
-    if (simpleFloorRef.current) {
-      simpleFloorRef.current.visible = cityReveal > 0.05 && !reflectorActive;
-      simpleFloorRef.current.position.z = -48 - floorScroll;
-      simpleFloorMat.current.opacity = 0.12 + blackPhase * 0.84;
-    }
-
     if (gridRef.current) {
-      const showGrid = cityReveal > 0.1 && blackPhase < 0.28 && fireProgress < 0.35;
-      gridRef.current.visible = showGrid;
       gridRef.current.position.z = -30 - (travel * 0.35) % 8;
-      gridMat.current.opacity = 0.08 * (1 - blackPhase) * (1 - fireProgress * 0.4);
+      gridMat.current.opacity = 0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4);
       lerpColor(gridMat.current.color, CYBER_GREEN.grid, BLACK_VOID, blackPhase);
     }
 
@@ -325,7 +306,6 @@ export default function CityWorld() {
 
     if (scene.fog && scene.fog instanceof THREE.Fog) {
       lerpColor(scene.fog.color, new THREE.Color("#06080B"), BLACK_VOID, blackPhase);
-      scene.fog.far = 48 + fireProgress * 20;
     }
 
     if (typeof document !== "undefined") {
@@ -336,7 +316,8 @@ export default function CityWorld() {
   });
 
   return (
-    <group ref={worldRef}>
+    <>
+      <group ref={worldRef}>
       <instancedMesh
         ref={greenBuildingsRef}
         args={[undefined, undefined, buildings.length]}
@@ -373,18 +354,6 @@ export default function CityWorld() {
         <planeGeometry args={[56, 1.8]} />
       </mesh>
 
-      <mesh
-        ref={simpleFloorRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -2.26, -48]}
-        material={simpleFloorMat.current}
-        visible={false}
-      >
-        <planeGeometry args={[56, 260]} />
-      </mesh>
-
-      <FloorReflection travelRef={travelRef} />
-
       <mesh ref={gridRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, -2.24, -30]} material={gridMat.current}>
         <planeGeometry args={[14, 260, 1, 52]} />
       </mesh>
@@ -400,6 +369,9 @@ export default function CityWorld() {
           </mesh>
         ))}
       </group>
-    </group>
+      </group>
+
+      <FloorReflection worldRef={worldRef} travelRef={travelRef} />
+    </>
   );
 }

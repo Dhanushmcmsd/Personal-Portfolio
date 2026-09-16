@@ -5,105 +5,60 @@ import { useFrame } from "@react-three/fiber";
 import { MeshReflectorMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
-import { getCityBlackPhase } from "@/lib/scroll/timeline";
+import { getCloudCityBlend } from "@/lib/scroll/timeline";
 
 interface FloorReflectionProps {
+  worldRef: React.RefObject<THREE.Group | null>;
   travelRef: React.MutableRefObject<number>;
 }
 
-export default function FloorReflection({ travelRef }: FloorReflectionProps) {
+export default function FloorReflection({ worldRef, travelRef }: FloorReflectionProps) {
+  const groupRef = useRef<THREE.Group>(null);
   const reflectorRef = useRef<THREE.Mesh>(null);
-  const mouseGlowRef = useRef<THREE.Mesh>(null);
-  const baseFloorRef = useRef<THREE.Mesh>(null);
 
-  useFrame((state) => {
+  useFrame(() => {
     const p = scrollEngine.progress;
-    const blackPhase = getCityBlackPhase(p);
-    const t = state.clock.elapsedTime;
-    const scrollZ = (travelRef.current * 0.02) % 2;
-    const floorZ = -48 - scrollZ;
+    const cityReveal = getCloudCityBlend(p);
+    const world = worldRef.current;
+    const group = groupRef.current;
 
-    const active = blackPhase > 0.55;
+    if (!world || !group) return;
 
-    if (baseFloorRef.current) {
-      baseFloorRef.current.visible = active;
-      baseFloorRef.current.position.z = floorZ;
-    }
+    group.visible = cityReveal > 0.05;
+    group.position.copy(world.position);
+    group.scale.copy(world.scale);
+    group.rotation.copy(world.rotation);
 
     if (reflectorRef.current) {
-      reflectorRef.current.visible = active;
-      reflectorRef.current.position.z = floorZ;
-    }
-
-    if (mouseGlowRef.current) {
-      mouseGlowRef.current.visible = false;
-    }
-
-    if (!active || !reflectorRef.current || !mouseGlowRef.current) return;
-
-    state.raycaster.setFromCamera(state.pointer, state.camera);
-    const hits = state.raycaster.intersectObject(reflectorRef.current, false);
-
-    if (hits[0]) {
-      mouseGlowRef.current.visible = true;
-      mouseGlowRef.current.position.set(
-        hits[0].point.x,
-        hits[0].point.y + 0.008,
-        hits[0].point.z
-      );
-      const pulse = 0.88 + Math.sin(t * 2.5) * 0.12;
-      mouseGlowRef.current.scale.setScalar(0.42 * pulse);
-      const glowMat = mouseGlowRef.current.material as THREE.MeshBasicMaterial;
-      glowMat.opacity = 0.06 * blackPhase * pulse;
+      const scrollZ = (travelRef.current * 0.02) % 2;
+      reflectorRef.current.position.z = -48 - scrollZ;
     }
   });
 
   return (
-    <>
-      <mesh
-        ref={baseFloorRef}
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -2.262, -48]}
-        visible={false}
-      >
-        <planeGeometry args={[56, 260]} />
-        <meshBasicMaterial color="#06080B" transparent opacity={0.98} depthWrite />
-      </mesh>
-
+    <group ref={groupRef} visible={false}>
       <mesh
         ref={reflectorRef}
         rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -2.258, -48]}
-        visible={false}
+        position={[0, -2.255, -48]}
       >
         <planeGeometry args={[56, 260]} />
         <MeshReflectorMaterial
-          blur={[256, 64]}
-          resolution={512}
-          mixBlur={0.65}
-          mixStrength={0.22}
-          roughness={1}
-          depthScale={0.65}
-          minDepthThreshold={0.5}
-          maxDepthThreshold={1.25}
-          color="#050608"
+          blur={[128, 32]}
+          resolution={256}
+          mixBlur={0.55}
+          mixStrength={0.16}
+          roughness={0.92}
+          depthScale={0.55}
+          minDepthThreshold={0.45}
+          maxDepthThreshold={1.35}
+          color="#000000"
           metalness={0.35}
-          mirror={0.32}
+          mirror={0.38}
           transparent
-          opacity={0.72}
+          opacity={0.38}
         />
       </mesh>
-
-      <mesh ref={mouseGlowRef} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <ringGeometry args={[0.12, 0.55, 32]} />
-        <meshBasicMaterial
-          color="#ffffff"
-          transparent
-          opacity={0.08}
-          blending={THREE.AdditiveBlending}
-          depthWrite={false}
-        />
-      </mesh>
-    </>
+    </group>
   );
 }

@@ -436,25 +436,26 @@ label,
 
 .cursor-click-burst {
   position: fixed;
+  top: 0;
+  left: 0;
   z-index: 99998;
   pointer-events: none;
-  transform: translate(-50%, -50%);
-  animation: cursorBurst 0.42s ease-out forwards;
+  will-change: transform, opacity;
+  animation: cursorBurst 0.45s ease-out forwards;
 }
 
 .cursor-click-burst img {
-  width: 30px;
+  width: 28px;
   height: auto;
+  transform: translate(-50%, -50%);
   image-rendering: pixelated;
 }
 
 @keyframes cursorBurst {
   0% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(0.9);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(1.12);
   }
 }

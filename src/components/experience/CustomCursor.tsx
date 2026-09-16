@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type CursorPhase = "default" | "hover" | "click1" | "click2";
 
@@ -13,60 +13,72 @@ const CURSORS: Record<CursorPhase, string> = {
   click2: "/cursor/click2.png",
 };
 
+function isInteractiveTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false;
+  return Boolean(
+    target.closest("a, button, [role='button'], .pressable, input, textarea, select, label")
+  );
+}
+
 export default function CustomCursor() {
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [phase, setPhase] = useState<CursorPhase>("default");
   const [bursts, setBursts] = useState<Burst[]>([]);
   const burstId = useRef(0);
-  const clicking = useRef(false);
+  const clickTimers = useRef<number[]>([]);
+  const interactiveRef = useRef(false);
+  const phaseRef = useRef<CursorPhase>("default");
+
+  phaseRef.current = phase;
+
+  const clearClickTimers = useCallback(() => {
+    clickTimers.current.forEach((id) => window.clearTimeout(id));
+    clickTimers.current = [];
+  }, []);
+
+  const resolvePhase = useCallback(() => {
+    setPhase(interactiveRef.current ? "hover" : "default");
+  }, []);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       setPos({ x: e.clientX, y: e.clientY });
-    };
-
-    const onOver = (e: MouseEvent) => {
-      if (clicking.current) return;
-      const target = e.target as HTMLElement | null;
-      const interactive = Boolean(
-        target?.closest("a, button, [role='button'], .pressable, input, textarea, select, label")
-      );
-      setPhase(interactive ? "hover" : "default");
+      interactiveRef.current = isInteractiveTarget(e.target);
+      if (phaseRef.current !== "click1" && phaseRef.current !== "click2") {
+        setPhase(interactiveRef.current ? "hover" : "default");
+      }
     };
 
     const onDown = (e: MouseEvent) => {
-      clicking.current = true;
+      clearClickTimers();
       const id = burstId.current++;
       setBursts((prev) => [...prev, { id, x: e.clientX, y: e.clientY }]);
       setPhase("click1");
-      window.setTimeout(() => setPhase("click2"), 90);
-      window.setTimeout(() => {
-        clicking.current = false;
-        setPhase("default");
-      }, 190);
-      window.setTimeout(() => {
-        setBursts((prev) => prev.filter((b) => b.id !== id));
-      }, 420);
+
+      clickTimers.current.push(
+        window.setTimeout(() => setPhase("click2"), 100),
+        window.setTimeout(() => resolvePhase(), 220),
+        window.setTimeout(() => {
+          setBursts((prev) => prev.filter((b) => b.id !== id));
+        }, 450)
+      );
     };
 
     window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseover", onOver);
     window.addEventListener("mousedown", onDown);
 
     return () => {
       window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseover", onOver);
       window.removeEventListener("mousedown", onDown);
+      clearClickTimers();
     };
-  }, []);
+  }, [clearClickTimers, resolvePhase]);
 
   return (
     <>
       <div
         className="custom-cursor"
-        style={{
-          transform: `translate3d(${pos.x}px, ${pos.y}px, 0)`,
-        }}
+        style={{ transform: `translate3d(${pos.x}px, ${pos.y}px, 0)` }}
         aria-hidden="true"
       >
         <img src={CURSORS[phase]} alt="" draggable={false} />
@@ -76,10 +88,7 @@ export default function CustomCursor() {
         <div
           key={burst.id}
           className="cursor-click-burst"
-          style={{
-            left: burst.x,
-            top: burst.y,
-          }}
+          style={{ transform: `translate3d(${burst.x}px, ${burst.y}px, 0)` }}
           aria-hidden="true"
         >
           <img src="/cursor/click-burst.png" alt="" draggable={false} />

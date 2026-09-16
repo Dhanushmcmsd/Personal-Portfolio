@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { getHeroCloudOpacity } from "@/lib/scroll/timeline";
 
-const TARGET_WORLD_SIZE = 0.28;
+const TARGET_WORLD_SIZE = 0.56;
 
 export default function HotAirBalloon() {
   const groupRef = useRef<THREE.Group>(null);
