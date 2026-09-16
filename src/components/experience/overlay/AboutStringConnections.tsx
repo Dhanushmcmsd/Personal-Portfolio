@@ -2,11 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
+import { smootherstep } from "@/lib/scroll/timeline";
 
 const STRING_COUNT = 12;
 const SEGMENTS = 12;
-const HIT_RADIUS = 28;
-const ARROW_SPEED = 9;
+const MIDDLE_CUT = Math.ceil(SEGMENTS / 2) + 1;
 
 interface Point {
   x: number;
@@ -22,17 +22,11 @@ interface RopeData {
   cutAt: number | null;
 }
 
-interface FallingArrow {
-  x: number;
-  y: number;
-  vy: number;
-  life: number;
-}
-
 interface AboutStringConnectionsProps {
-  paperAnchorRef: React.RefObject<HTMLDivElement | null>;
+  paperRef: React.RefObject<HTMLDivElement | null>;
   photoRef: React.RefObject<HTMLDivElement | null>;
   containerRef: React.RefObject<HTMLDivElement | null>;
+  aboutLocalRef: React.MutableRefObject<number>;
   active: boolean;
 }
 
@@ -41,12 +35,26 @@ function createRope(ax: number, ay: number, bx: number, by: number): RopeData {
   for (let i = 0; i <= SEGMENTS; i++) {
     const t = i / SEGMENTS;
     const x = ax + (bx - ax) * t;
-    const y = ay + (by - ay) * t + Math.sin(t * Math.PI) * 8;
+    const y = ay + (by - ay) * t + Math.sin(t * Math.PI) * 6;
     points.push({ x, y, px: x, py: y, pinned: i === 0 || i === SEGMENTS });
   }
   const dx = bx - ax;
   const dy = by - ay;
   return { points, segmentLength: Math.hypot(dx, dy) / SEGMENTS, cutAt: null };
+}
+
+function getPaperBounds(paperEl: HTMLElement) {
+  const rect = paperEl.getBoundingClientRect();
+  const paperOpen = parseFloat(
+    getComputedStyle(paperEl).getPropertyValue("--paper-open").trim() || "0"
+  );
+  const pad = 8 * (1 - paperOpen);
+  return {
+    right: rect.right + pad,
+    top: rect.top - pad,
+    bottom: rect.bottom + pad,
+    height: rect.height + pad * 2,
+  };
 }
 
 function simulatePoints(
@@ -57,12 +65,8 @@ function simulatePoints(
   pinStart: boolean,
   pinEnd: boolean
 ) {
-  if (pinStart) {
-    points[0].pinned = true;
-  }
-  if (pinEnd) {
-    points[points.length - 1].pinned = true;
-  }
+  if (pinStart) points[0].pinned = true;
+  if (pinEnd) points[points.length - 1].pinned = true;
 
   for (const p of points) {
     if (p.pinned) continue;
@@ -103,85 +107,32 @@ function drawPoints(ctx: CanvasRenderingContext2D, points: Point[], alpha: numbe
   for (let i = 1; i < points.length; i++) {
     const prev = points[i - 1];
     const curr = points[i];
-    const cx = (prev.x + curr.x) / 2;
-    const cy = (prev.y + curr.y) / 2;
-    ctx.quadraticCurveTo(prev.x, prev.y, cx, cy);
+    ctx.quadraticCurveTo(prev.x, prev.y, (prev.x + curr.x) / 2, (prev.y + curr.y) / 2);
   }
-  const last = points[points.length - 1];
-  ctx.lineTo(last.x, last.y);
-  ctx.strokeStyle = `rgba(30, 28, 26, ${0.38 * alpha})`;
+  ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
+  ctx.strokeStyle = `rgba(30, 28, 26, ${0.4 * alpha})`;
   ctx.lineWidth = 1.1;
   ctx.stroke();
-  ctx.strokeStyle = `rgba(180, 170, 155, ${0.24 * alpha})`;
+  ctx.strokeStyle = `rgba(180, 170, 155, ${0.26 * alpha})`;
   ctx.lineWidth = 0.45;
   ctx.stroke();
 }
 
-function nearestRopeHit(
-  ropes: RopeData[],
-  x: number,
-  y: number
-): { ropeIndex: number; segment: number; dist: number } | null {
-  let best: { ropeIndex: number; segment: number; dist: number } | null = null;
-
-  ropes.forEach((rope, ropeIndex) => {
-    const limit = rope.cutAt ?? rope.points.length;
-    for (let i = 0; i < limit - 1; i++) {
-      const a = rope.points[i];
-      const b = rope.points[i + 1];
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const lenSq = dx * dx + dy * dy || 1;
-      let t = ((x - a.x) * dx + (y - a.y) * dy) / lenSq;
-      t = Math.max(0, Math.min(1, t));
-      const px = a.x + t * dx;
-      const py = a.y + t * dy;
-      const dist = Math.hypot(x - px, y - py);
-      if (dist < HIT_RADIUS && (!best || dist < best.dist)) {
-        best = { ropeIndex, segment: i + 1, dist };
-      }
-    }
-  });
-
-  return best;
-}
-
-function drawArrow(ctx: CanvasRenderingContext2D, arrow: FallingArrow, alpha: number) {
-  const size = 10;
-  ctx.save();
-  ctx.translate(arrow.x, arrow.y);
-  ctx.shadowColor = "rgba(255, 220, 120, 0.9)";
-  ctx.shadowBlur = 12;
-  ctx.fillStyle = `rgba(255, 230, 150, ${0.95 * alpha})`;
-  ctx.beginPath();
-  ctx.moveTo(0, size);
-  ctx.lineTo(-size * 0.45, -size * 0.2);
-  ctx.lineTo(0, 0);
-  ctx.lineTo(size * 0.45, -size * 0.2);
-  ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = `rgba(255, 200, 80, ${0.8 * alpha})`;
-  ctx.lineWidth = 0.8;
-  ctx.stroke();
-  ctx.restore();
-}
-
 export default function AboutStringConnections({
-  paperAnchorRef,
+  paperRef,
   photoRef,
   containerRef,
+  aboutLocalRef,
   active,
 }: AboutStringConnectionsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ropesRef = useRef<RopeData[]>([]);
-  const arrowsRef = useRef<FallingArrow[]>([]);
   const rafRef = useRef(0);
   const visibleRef = useRef(0);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -194,50 +145,11 @@ export default function AboutStringConnections({
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
 
-    const onClick = (e: MouseEvent) => {
-      if (!active || visibleRef.current < 0.2) return;
-
-      let bestDist = Infinity;
-      let spawnX = e.clientX;
-
-      for (const rope of ropesRef.current) {
-        if (rope.cutAt !== null) continue;
-        for (let i = 0; i < rope.points.length - 1; i++) {
-          const a = rope.points[i];
-          const b = rope.points[i + 1];
-          const minX = Math.min(a.x, b.x) - 24;
-          const maxX = Math.max(a.x, b.x) + 24;
-          if (e.clientX < minX || e.clientX > maxX) continue;
-          const dx = b.x - a.x;
-          const dy = b.y - a.y;
-          const lenSq = dx * dx + dy * dy || 1;
-          let t = ((e.clientX - a.x) * dx + (e.clientY - a.y) * dy) / lenSq;
-          t = Math.max(0, Math.min(1, t));
-          const px = a.x + t * dx;
-          const dist = Math.abs(e.clientX - px);
-          if (dist < HIT_RADIUS && dist < bestDist) {
-            bestDist = dist;
-            spawnX = px;
-          }
-        }
-      }
-
-      if (bestDist === Infinity) return;
-
-      arrowsRef.current.push({
-        x: spawnX,
-        y: e.clientY - 52,
-        vy: ARROW_SPEED,
-        life: 1,
-      });
-    };
-
     resize();
     window.addEventListener("resize", resize);
-    canvas.addEventListener("click", onClick);
 
     const tick = () => {
-      const anchor = paperAnchorRef.current;
+      const paper = paperRef.current;
       const photo = photoRef.current;
       const container = containerRef.current;
       const opacity = Number(container?.style.opacity ?? 0);
@@ -245,62 +157,56 @@ export default function AboutStringConnections({
 
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
 
-      if (!anchor || !photo || visibleRef.current < 0.08) {
+      if (!paper || !photo || visibleRef.current < 0.08) {
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
 
-      const anchorRect = anchor.getBoundingClientRect();
+      const paperBounds = getPaperBounds(paper);
       const photoRect = photo.getBoundingClientRect();
-
-      if (anchorRect.width < 1 || photoRect.width < 10) {
+      if (photoRect.width < 10) {
         rafRef.current = requestAnimationFrame(tick);
         return;
       }
 
-      const paperX = anchorRect.left + anchorRect.width / 2;
+      const paperX = paperBounds.right;
       const anchorsPaper: { x: number; y: number }[] = [];
       const anchorsPhoto: { x: number; y: number }[] = [];
 
       for (let i = 0; i < STRING_COUNT; i++) {
         const t = (i + 0.5) / STRING_COUNT;
-        const paperY = anchorRect.top + anchorRect.height * (0.08 + t * 0.84);
+        const paperY = paperBounds.top + paperBounds.height * (0.1 + t * 0.8);
         const photoY = photoRect.top + photoRect.height * (0.1 + t * 0.8);
         anchorsPaper.push({ x: paperX, y: paperY });
-        anchorsPhoto.push({ x: photoRect.left + 6, y: photoY });
+        anchorsPhoto.push({ x: photoRect.left + 4, y: photoY });
       }
 
+      const aboutLocal = aboutLocalRef.current;
+      const shouldCut = smootherstep(0.48, 0.72, aboutLocal) > 0.02;
+
       if (ropesRef.current.length !== STRING_COUNT) {
-        ropesRef.current = anchorsPaper.map((a, i) =>
-          createRope(a.x, a.y, anchorsPhoto[i].x, anchorsPhoto[i].y)
-        );
+        ropesRef.current = anchorsPaper.map((a, i) => {
+          const rope = createRope(a.x, a.y, anchorsPhoto[i].x, anchorsPhoto[i].y);
+          if (shouldCut) rope.cutAt = MIDDLE_CUT;
+          return rope;
+        });
       } else {
         ropesRef.current.forEach((rope, i) => {
-          if (rope.cutAt === null) {
-            rope.points[0].x = anchorsPaper[i].x;
-            rope.points[0].y = anchorsPaper[i].y;
-            rope.points[rope.points.length - 1].x = anchorsPhoto[i].x;
-            rope.points[rope.points.length - 1].y = anchorsPhoto[i].y;
-          } else {
-            rope.points[0].x = anchorsPaper[i].x;
-            rope.points[0].y = anchorsPaper[i].y;
-            const cutIdx = rope.cutAt;
-            rope.points[rope.points.length - 1].x = anchorsPhoto[i].x;
-            rope.points[rope.points.length - 1].y = anchorsPhoto[i].y;
-            for (let j = 1; j < cutIdx; j++) {
-              rope.points[j].pinned = false;
-            }
-            rope.points[0].pinned = true;
-            for (let j = cutIdx; j < rope.points.length; j++) {
-              rope.points[j].pinned = j === rope.points.length - 1;
-            }
+          if (shouldCut && rope.cutAt === null) {
+            rope.cutAt = MIDDLE_CUT;
           }
+          rope.points[0].x = anchorsPaper[i].x;
+          rope.points[0].y = anchorsPaper[i].y;
+          rope.points[0].pinned = true;
+          rope.points[rope.points.length - 1].x = anchorsPhoto[i].x;
+          rope.points[rope.points.length - 1].y = anchorsPhoto[i].y;
         });
       }
 
       const scrollWind = scrollEngine.velocity * 140;
+      const exitDangle = smootherstep(0.55, 0.95, aboutLocal);
       const windX = scrollWind + Math.sin(performance.now() * 0.0012) * 0.08;
-      const windY = (scrollEngine.progress - 0.72) * 0.7;
+      const windY = exitDangle * 0.55 + scrollEngine.velocity * 20;
 
       for (const rope of ropesRef.current) {
         if (rope.cutAt === null) {
@@ -313,36 +219,22 @@ export default function AboutStringConnections({
           upper[0].pinned = true;
           if (upper.length > 1) {
             upper[upper.length - 1].pinned = false;
-            simulatePoints(upper, rope.segmentLength, windX, windY, true, false);
+            simulatePoints(upper, rope.segmentLength, windX, windY * 0.5, true, false);
             drawPoints(ctx, upper, visibleRef.current);
           }
           lower[lower.length - 1].pinned = true;
           lower[0].pinned = false;
-          simulatePoints(lower, rope.segmentLength, windX * 1.2, windY + 0.35, false, true);
+          simulatePoints(
+            lower,
+            rope.segmentLength,
+            windX * (1 + exitDangle),
+            windY + 0.4 + exitDangle * 0.6,
+            false,
+            true
+          );
           drawPoints(ctx, lower, visibleRef.current);
         }
       }
-
-      arrowsRef.current = arrowsRef.current.filter((arrow) => {
-        arrow.y += arrow.vy;
-        arrow.vy += 0.35;
-        arrow.life -= 0.018;
-        drawArrow(ctx, arrow, arrow.life * visibleRef.current);
-
-        for (const rope of ropesRef.current) {
-          if (rope.cutAt !== null) continue;
-          for (let i = 1; i < rope.points.length - 1; i++) {
-            const p = rope.points[i];
-            if (Math.hypot(arrow.x - p.x, arrow.y - p.y) < 14) {
-              rope.cutAt = i + 1;
-              rope.points[i].pinned = false;
-              break;
-            }
-          }
-        }
-
-        return arrow.life > 0 && arrow.y < window.innerHeight + 40;
-      });
 
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -351,21 +243,16 @@ export default function AboutStringConnections({
 
     return () => {
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("click", onClick);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [paperAnchorRef, photoRef, containerRef, active]);
+  }, [paperRef, photoRef, containerRef, aboutLocalRef, active]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="about-string-canvas fixed inset-0 z-[15]"
-      style={{
-        opacity: active ? 1 : 0,
-        pointerEvents: active ? "auto" : "none",
-        cursor: active ? "crosshair" : "default",
-      }}
-      aria-hidden={!active}
+      className="about-string-canvas pointer-events-none fixed inset-0 z-[15]"
+      style={{ opacity: active ? 1 : 0 }}
+      aria-hidden="true"
     />
   );
 }

@@ -39,8 +39,9 @@ export default function OverlayUI() {
   const experienceBgRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   const aboutPaperRef = useRef<HTMLDivElement>(null);
-  const aboutPaperAnchorRef = useRef<HTMLDivElement>(null);
   const aboutPhotoRef = useRef<HTMLDivElement>(null);
+  const eduNoteRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const aboutLocalRef = useRef(0);
   const contactRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const clockRef = useRef<HTMLSpanElement>(null);
@@ -94,8 +95,26 @@ export default function OverlayUI() {
           "--exp-scroll-away",
           String(smootherstep(0.55, 1, expLocal))
         );
-        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal);
+        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal * 0.65);
       }
+
+      education.forEach((_, i) => {
+        const note = eduNoteRefs.current[i];
+        if (!note) return;
+        const fromLeft = i % 2 === 0;
+        const stagger = i * 0.12;
+        const enter = smootherstep(0.08 + stagger, 0.38 + stagger, expLocal);
+        const exit = 1 - smootherstep(0.62, 0.92, expLocal);
+        const life = expOpacity * enter * exit;
+        const slideX = fromLeft ? (1 - enter) * -140 : (1 - enter) * 140;
+        const slideY = (1 - enter) * 50 + exit * 30;
+        const rot = fromLeft ? -8 + enter * 8 : 8 - enter * 8;
+        setEl(
+          note,
+          life,
+          `translate3d(${slideX}px, ${slideY}px, 0) rotate(${rot}deg) scale(${0.88 + enter * 0.12})`
+        );
+      });
 
       const aboutOpacity = exclusiveOpacity(
         p,
@@ -104,6 +123,7 @@ export default function OverlayUI() {
         0.025
       );
       const aboutLocal = sectionLocalProgress(p, SECTION.about[0], SECTION.about[1]);
+      aboutLocalRef.current = aboutLocal;
       setEl(
         aboutRef.current,
         aboutOpacity,
@@ -179,17 +199,17 @@ export default function OverlayUI() {
         style={{ opacity: 1 }}
       >
         <div className="hero-content w-full max-w-[min(100%,920px)] px-2 text-center">
-          <p className="hero-eyebrow-text mx-auto text-[13px] md:text-[15px] opacity-80">
+          <p className="hero-eyebrow-text mx-auto text-[15px] md:text-[18px] opacity-80">
             {hero.eyebrow}
           </p>
-          <h1 className="hero-name-text mx-auto mt-6 w-full max-w-[92vw] text-[clamp(1.25rem,4.8vw,4.2rem)] leading-[0.95]">
+          <h1 className="hero-name-text mx-auto mt-6 w-full max-w-[92vw] text-[clamp(1.6rem,5.5vw,5rem)] leading-[0.95]">
             {person.displayName}
           </h1>
-          <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-xl md:text-3xl">{hero.title}</p>
-          <p className="hero-body-text mx-auto mt-4 w-full max-w-3xl text-sm md:text-lg opacity-90">
+          <p className="hero-body-text mx-auto mt-8 w-full max-w-4xl text-2xl md:text-4xl">{hero.title}</p>
+          <p className="hero-body-text mx-auto mt-4 w-full max-w-3xl text-base md:text-xl opacity-90">
             {hero.subtitle}
           </p>
-          <p className="hero-body-text mx-auto mt-16 text-[13px] md:text-[15px] opacity-70">
+          <p className="hero-body-text mx-auto mt-16 text-[14px] md:text-[17px] opacity-70">
             {hero.scrollLabel} ↓
           </p>
         </div>
@@ -250,22 +270,22 @@ export default function OverlayUI() {
           style={{ "--exp-reveal": 0, "--exp-scroll-away": 0 } as CSSProperties}
           aria-hidden="true"
         />
-        <div className="experience-content relative z-10 mx-auto w-full max-w-3xl text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] opacity-70">
+        <div className="experience-content relative z-10 mx-auto w-full max-w-3xl text-center font-bold">
+          <p className="font-mono text-xs uppercase tracking-[0.35em] opacity-80 md:text-sm">
             Experience
           </p>
-          <h2 className="mt-4 font-[family-name:var(--font-display)] text-4xl md:text-6xl">
+          <h2 className="mt-4 font-[family-name:var(--font-display)] text-5xl font-bold md:text-7xl">
             WHERE I&apos;VE WORKED
           </h2>
           <div className="mt-12 space-y-10 text-left">
             {experience.map((job) => (
               <div key={job.company + job.role} className="experience-entry border-l border-[#722F37]/40 pl-6">
-                <p className="font-mono text-xs opacity-70">{job.period}</p>
-                <h3 className="mt-1 text-xl">{job.role}</h3>
-                <p className="text-sm opacity-85">{job.company}</p>
+                <p className="font-mono text-sm font-bold opacity-80 md:text-base">{job.period}</p>
+                <h3 className="mt-1 text-2xl font-bold md:text-3xl">{job.role}</h3>
+                <p className="text-base font-bold opacity-90 md:text-lg">{job.company}</p>
                 <ul className="mt-3 space-y-2">
                   {job.highlights.slice(0, 2).map((h) => (
-                    <li key={h} className="text-xs leading-relaxed opacity-75">
+                    <li key={h} className="text-sm font-bold leading-relaxed opacity-85 md:text-base">
                       {h}
                     </li>
                   ))}
@@ -273,22 +293,34 @@ export default function OverlayUI() {
               </div>
             ))}
           </div>
-          <div className="mt-12 grid gap-4 md:grid-cols-2">
-            {education.map((edu) => (
-              <div key={edu.degree} className="rounded-lg border border-[#722F37]/20 bg-white/40 p-4">
-                <p className="font-mono text-[10px] opacity-70">{edu.period}</p>
-                <p className="mt-1 text-sm">{edu.degree}</p>
-                <p className="text-xs opacity-75">{edu.school}</p>
-              </div>
-            ))}
-          </div>
         </div>
+
+        {education.map((edu, i) => (
+          <div
+            key={edu.degree}
+            ref={(el) => {
+              eduNoteRefs.current[i] = el;
+            }}
+            className={`experience-note ${i % 2 === 0 ? "experience-note-left" : "experience-note-right"}`}
+            style={{ opacity: 0 }}
+          >
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider opacity-70">
+              {edu.period}
+            </p>
+            <p className="mt-2 text-sm font-bold leading-snug md:text-base">{edu.degree}</p>
+            <p className="mt-1 text-xs font-bold opacity-85 md:text-sm">{edu.school}</p>
+            {edu.gpa ? (
+              <p className="mt-2 font-mono text-[10px] font-bold opacity-70">{edu.gpa}</p>
+            ) : null}
+          </div>
+        ))}
       </div>
 
       <AboutStringConnections
-        paperAnchorRef={aboutPaperAnchorRef}
+        paperRef={aboutPaperRef}
         photoRef={aboutPhotoRef}
         containerRef={aboutRef}
+        aboutLocalRef={aboutLocalRef}
         active={aboutStringsActive}
       />
 
@@ -299,7 +331,6 @@ export default function OverlayUI() {
       >
         <div className="grid w-full max-w-6xl grid-cols-1 items-center gap-10 md:grid-cols-2">
           <div ref={aboutPaperRef} className="about-paper-panel" style={{ "--paper-open": 0 } as CSSProperties}>
-            <div ref={aboutPaperAnchorRef} className="about-string-anchor" aria-hidden="true" />
             <h2 className="font-[family-name:var(--font-display)] text-[clamp(2.4rem,8vw,5.5rem)] leading-[0.9]">
               {content.aboutTitle}
             </h2>
@@ -308,9 +339,6 @@ export default function OverlayUI() {
             </p>
             <p className="mt-6 max-w-xl text-sm leading-relaxed md:text-base opacity-80">
               {content.aboutText}
-            </p>
-            <p className="mt-10 font-mono text-[11px] opacity-60">
-              Click to cut the strings.
             </p>
             <div className="mt-8 flex flex-wrap gap-2">
               {skills.programming.slice(0, 6).map((s) => (
