@@ -12,7 +12,6 @@ import CameraRig from "./CameraRig";
 import CityWorld from "./CityWorld";
 import CloudSky from "./CloudSky";
 import HotAirBalloon from "./HotAirBalloon";
-import ExperienceFlowMesh from "./ExperienceFlowMesh";
 import ProjectExhibit from "./ProjectExhibit";
 import VirusMascot, { EAT_DURATION_MS, type EatTarget } from "./VirusMascot";
 import FruitSystem, { randomFruitEmoji, screenToWorld, type Fruit } from "./FruitSystem";
@@ -118,7 +117,6 @@ export default function ExperienceScene() {
         <CloudSky />
         <HotAirBalloon />
         <CityWorld />
-        <ExperienceFlowMesh />
 
         {PORTFOLIO_CONFIG.projects.map((project, i) => (
           <ProjectExhibit

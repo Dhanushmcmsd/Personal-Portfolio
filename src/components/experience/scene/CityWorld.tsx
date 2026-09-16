@@ -290,8 +290,9 @@ export default function CityWorld() {
     applyClipAbove(whiteBuildingMat.current, maskY);
     applyClipAbove(whiteWireMat.current, maskY);
 
+    const inExperience = p >= SECTION.experience[0] && p <= SECTION.experience[1];
+
     if (fireBandRef.current) {
-      const inExperience = p >= SECTION.experience[0] && p <= SECTION.experience[1];
       fireBandRef.current.visible =
         !inExperience && fireProgress > 0.01 && fireProgress < 0.995;
       fireBandRef.current.position.y = maskY;
@@ -310,6 +311,7 @@ export default function CityWorld() {
 
     if (gridRef.current) {
       gridRef.current.position.z = -30 - (travel * 0.35) % 8;
+      gridRef.current.visible = cityReveal > 0.02 && !inExperience;
       gridMat.current.opacity =
         0.08 * (1 - blackPhase * 0.85) * (1 - fireProgress * 0.4) * dimFactor;
       lerpColor(gridMat.current.color, CYBER_GREEN.grid, BLACK_VOID, blackPhase);

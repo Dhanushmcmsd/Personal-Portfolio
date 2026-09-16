@@ -284,8 +284,8 @@ canvas {
 
 .experience-carousel__track {
   display: flex;
-  gap: 20px;
-  padding: 0 clamp(12px, 2vw, 24px);
+  gap: 16px;
+  padding: 0;
   touch-action: none;
   transform-style: preserve-3d;
 }

@@ -13,8 +13,7 @@ import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { sectionLocalProgress, smootherstep, SECTION } from "@/lib/scroll/timeline";
 
-const CARD_WIDTH = 380;
-const CARD_GAP = 24;
+const CARD_GAP = 16;
 
 type JobCard = (typeof PORTFOLIO_CONFIG.experience)[number] & { kind: "job" };
 type EduCard = (typeof PORTFOLIO_CONFIG.education)[number] & { kind: "edu" };
@@ -26,8 +25,14 @@ function padIndex(n: number) {
   return String(n + 1).padStart(2, "0");
 }
 
-function loopSegmentWidth(cardCount: number) {
-  return cardCount * CARD_WIDTH + Math.max(0, cardCount - 1) * CARD_GAP;
+function computeCardWidth(containerWidth: number) {
+  if (containerWidth <= 0) return 360;
+  const visible = containerWidth < 640 ? 1.02 : containerWidth < 1100 ? 1.85 : 2.7;
+  return Math.max(280, Math.min(420, Math.floor((containerWidth - CARD_GAP * (visible - 1)) / visible)));
+}
+
+function loopSegmentWidth(cardCount: number, cardWidth: number) {
+  return cardCount * cardWidth + Math.max(0, cardCount - 1) * CARD_GAP;
 }
 
 function wrapDragX(x: number, segment: number) {
@@ -40,6 +45,7 @@ function wrapDragX(x: number, segment: number) {
 type ExperienceCardProps = {
   card: LoopedCard;
   index: number;
+  cardWidth: number;
   dragX: MotionValue<number>;
   dragTilt: MotionValue<number>;
   dragDepth: MotionValue<number>;
@@ -51,6 +57,7 @@ type ExperienceCardProps = {
 function ExperienceCard({
   card,
   index,
+  cardWidth,
   dragX,
   dragTilt,
   dragDepth,
@@ -61,12 +68,13 @@ function ExperienceCard({
   const stagger = Math.min(1, Math.max(0, enterProgress - card.sourceIndex * 0.08) / 0.35);
   const enterY = (1 - stagger) * 48;
   const enterScale = 0.9 + stagger * 0.1;
+  const cardStep = cardWidth + CARD_GAP;
 
-  const cardLeft = index * (CARD_WIDTH + CARD_GAP);
+  const cardLeft = index * cardStep;
   const cardTransform = useTransform(
     [dragX, dragTilt, dragDepth, dragZoom],
     ([x, tilt, depth, zoom]) => {
-      const cardCenter = cardLeft + CARD_WIDTH * 0.5 + (x as number);
+      const cardCenter = cardLeft + cardWidth * 0.5 + (x as number);
       const viewCenter = containerWidth * 0.5;
       const norm = containerWidth > 0 ? (cardCenter - viewCenter) / (containerWidth * 0.5) : 0;
       const clamped = Math.max(-1.2, Math.min(1.2, norm));
@@ -86,8 +94,8 @@ function ExperienceCard({
     <article
       className={`experience-card ${card.kind === "edu" ? "experience-card--edu" : ""}`}
       style={{
-        width: CARD_WIDTH,
-        minWidth: CARD_WIDTH,
+        width: cardWidth,
+        minWidth: cardWidth,
         opacity: stagger,
       }}
     >
@@ -126,11 +134,11 @@ export default function ExperienceCarousel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
+  const [cardWidth, setCardWidth] = useState(360);
   const dragX = useMotionValue(0);
   const dragTilt = useMotionValue(0);
   const dragDepth = useMotionValue(0);
   const dragZoom = useMotionValue(1);
-  const loopInitialized = useRef(false);
 
   const baseCards = useMemo<CarouselCard[]>(
     () => [
@@ -140,7 +148,8 @@ export default function ExperienceCarousel() {
     []
   );
 
-  const loopSegment = loopSegmentWidth(baseCards.length);
+  const loopSegment = loopSegmentWidth(baseCards.length, cardWidth);
+  const cardStep = cardWidth + CARD_GAP;
 
   const loopedCards = useMemo<LoopedCard[]>(
     () =>
@@ -153,14 +162,15 @@ export default function ExperienceCarousel() {
   const measure = useCallback(() => {
     const container = containerRef.current;
     if (!container) return;
-    setContainerWidth(container.clientWidth);
+    const width = container.clientWidth;
+    setContainerWidth(width);
+    setCardWidth(computeCardWidth(width));
   }, []);
 
   useEffect(() => {
-    if (loopSegment <= 0 || loopInitialized.current) return;
-    dragX.set(-loopSegment);
-    loopInitialized.current = true;
-  }, [dragX, loopSegment]);
+    if (loopSegment <= 0 || baseCards.length === 0) return;
+    dragX.set(-baseCards.length * cardStep);
+  }, [baseCards.length, cardStep, dragX, loopSegment]);
 
   useEffect(() => {
     measure();
@@ -286,6 +296,7 @@ export default function ExperienceCarousel() {
               key={`${card.kind}-${card.sourceIndex}-${i}`}
               card={card}
               index={i}
+              cardWidth={cardWidth}
               dragX={dragX}
               dragTilt={dragTilt}
               dragDepth={dragDepth}
