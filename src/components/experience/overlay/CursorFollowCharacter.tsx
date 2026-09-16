@@ -42,7 +42,7 @@ export default function CursorFollowCharacter() {
         ref={ghostRef}
         className="absolute inset-0 h-full w-full"
         style={{
-          objectPosition: "32% 32%",
+          objectPosition: "68% 12%",
           opacity: 0,
           transform: "scaleX(-1)",
           filter: "blur(10px) saturate(1.15) brightness(1.25)",
@@ -50,9 +50,9 @@ export default function CursorFollowCharacter() {
       />
       <video
         ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover object-top"
         style={{
-          objectPosition: "32% 32%",
+          objectPosition: "68% 12%",
           transform: "scaleX(-1)",
           filter: "contrast(1.25) brightness(1.45) saturate(1.25)",
         }}

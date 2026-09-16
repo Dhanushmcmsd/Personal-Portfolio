@@ -27,8 +27,8 @@ function snapshotVideo(video: HTMLVideoElement, canvas: HTMLCanvasElement) {
   const scale = Math.max(width / video.videoWidth, height / video.videoHeight);
   const dw = video.videoWidth * scale;
   const dh = video.videoHeight * scale;
-  const x = (width - dw) * 0.32;
-  const y = (height - dh) * 0.32;
+  const x = (width - dw) * 0.68;
+  const y = (height - dh) * 0.12;
 
   ctx.clearRect(0, 0, width, height);
   ctx.filter = "blur(14px) brightness(1.1)";
@@ -101,7 +101,7 @@ export function useTurnOnCursorX(
         const duration = video.duration;
         if (Number.isFinite(duration) && duration > 0) {
           cursorTarget = ratioToTime(
-            pendingClientX / Math.max(1, window.innerWidth),
+            1 - pendingClientX / Math.max(1, window.innerWidth),
             duration
           );
         }
