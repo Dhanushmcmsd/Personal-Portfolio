@@ -90,22 +90,21 @@ export default function OverlayUI() {
       const expLocal = sectionLocalProgress(p, SECTION.experience[0], SECTION.experience[1]);
       const expBgReveal =
         smootherstep(0, 0.45, expLocal) * (1 - smootherstep(0.72, 1, expLocal));
+      const expScrollAway = smootherstep(0.5, 0.96, expLocal);
+      const expExitFade = 1 - expScrollAway;
+      const expExitShift = -expScrollAway * 96;
       setEl(experienceRef.current, expOpacity, `translateY(${(1 - expOpacity) * 28}px)`);
       if (experienceBgRef.current) {
         experienceBgRef.current.style.setProperty("--exp-reveal", String(expBgReveal));
-        experienceBgRef.current.style.setProperty(
-          "--exp-scroll-away",
-          String(smootherstep(0.55, 1, expLocal))
-        );
-        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal);
+        experienceBgRef.current.style.setProperty("--exp-scroll-away", String(expScrollAway));
+        experienceBgRef.current.style.opacity = String(expOpacity * expBgReveal * expExitFade);
       }
 
       const headingReveal = smootherstep(0.04, 0.26, expLocal);
-      const headingExit = 1 - smootherstep(0.68, 0.94, expLocal);
       setEl(
         expHeadingRef.current,
-        expOpacity * headingReveal * headingExit,
-        `translate3d(0, ${(1 - headingReveal) * 36}px, 0) scale(${0.9 + headingReveal * 0.1})`
+        expOpacity * headingReveal * expExitFade,
+        `translate3d(${expExitShift}px, ${(1 - headingReveal) * 36}px, 0) scale(${0.9 + headingReveal * 0.1})`
       );
 
       experience.forEach((_, i) => {
@@ -113,10 +112,9 @@ export default function OverlayUI() {
         if (!entry) return;
         const stagger = 0.12 + i * 0.1;
         const enter = smootherstep(stagger, stagger + 0.24, expLocal);
-        const exit = 1 - smootherstep(0.62 + i * 0.05, 0.94, expLocal);
-        const life = expOpacity * enter * exit;
-        const slideY = (1 - enter) * 44 + exit * 28;
-        const slideX = (1 - enter) * 32;
+        const life = expOpacity * enter * expExitFade;
+        const slideY = (1 - enter) * 44;
+        const slideX = (1 - enter) * 32 + expExitShift - i * expScrollAway * 12;
         setEl(
           entry,
           life,
@@ -130,10 +128,10 @@ export default function OverlayUI() {
         const fromLeft = i % 2 === 0;
         const stagger = i * 0.12;
         const enter = smootherstep(0.08 + stagger, 0.38 + stagger, expLocal);
-        const exit = 1 - smootherstep(0.62, 0.92, expLocal);
-        const life = expOpacity * enter * exit;
-        const slideX = fromLeft ? (1 - enter) * -140 : (1 - enter) * 140;
-        const slideY = (1 - enter) * 50 + exit * 30;
+        const life = expOpacity * enter * expExitFade;
+        const enterX = fromLeft ? (1 - enter) * -140 : (1 - enter) * 140;
+        const slideX = enterX + expExitShift - (fromLeft ? 24 : 8);
+        const slideY = (1 - enter) * 50 + expScrollAway * 18;
         const rot = fromLeft ? -8 + enter * 8 : 8 - enter * 8;
         setEl(
           note,
@@ -338,14 +336,10 @@ export default function OverlayUI() {
             className={`experience-note ${i % 2 === 0 ? "experience-note-left" : "experience-note-right"}`}
             style={{ opacity: 0 }}
           >
-            <p className="font-mono text-[10px] font-extrabold uppercase tracking-wider opacity-85">
-              {edu.period}
-            </p>
-            <p className="mt-2 text-sm font-extrabold leading-snug md:text-base">{edu.degree}</p>
-            <p className="mt-1 text-xs font-bold opacity-90 md:text-sm">{edu.school}</p>
-            {edu.gpa ? (
-              <p className="mt-2 font-mono text-[10px] font-bold opacity-80">{edu.gpa}</p>
-            ) : null}
+            <p className="experience-note-period">{edu.period}</p>
+            <p className="experience-note-degree">{edu.degree}</p>
+            <p className="experience-note-school">{edu.school}</p>
+            {edu.gpa ? <p className="experience-note-gpa">{edu.gpa}</p> : null}
           </div>
         ))}
       </div>
