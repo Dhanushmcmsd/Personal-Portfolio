@@ -112,7 +112,7 @@ function generateSegment(offsetZ: number): BuildingData[] {
 }
 
 /** Foreground rows that stay visible as the camera travels deeper into the city */
-function generateForwardRows(): BuildingData[] {
+function generateForwardRows(offsetZ = 0): BuildingData[] {
   const buildings: BuildingData[] = [];
   let i = 0;
   for (let z = 20; z <= 78; z += 3.5) {
@@ -121,7 +121,7 @@ function generateForwardRows(): BuildingData[] {
       buildings.push({
         x: side * (7.8 + (i % 5) * 0.35),
         y: h / 2 - 2.1,
-        z,
+        z: z + offsetZ,
         sx: 2.1 + (i % 4) * 0.25,
         sy: h,
         sz: 2.4 + (i % 3) * 0.2,
@@ -172,7 +172,10 @@ export default function CityWorld() {
     for (let s = 0; s < segments; s++) {
       all.push(...generateSegment(-s * SEGMENT));
     }
+    // Wrap copy ahead of the origin so the infinite loop seam always has foreground fill
+    all.push(...generateSegment(SEGMENT));
     all.push(...generateForwardRows());
+    all.push(...generateForwardRows(SEGMENT));
     // Permanent flank rows so side buildings never gap during experience scroll
     for (let z = 78; z > -SEGMENT * segments; z -= 4) {
       for (const side of [-1, 1] as const) {
@@ -311,6 +314,7 @@ export default function CityWorld() {
     const p = scrollEngine.progress;
     const t = state.clock.elapsedTime;
     const travel = p * TRAVEL_MAX;
+    const loopOffset = travel % SEGMENT;
     const cityReveal = getCloudCityBlend(p);
     const blackPhase = getCityBlackPhase(p);
     const fireProgress = getCityWhiteFireProgress(p);
@@ -318,8 +322,7 @@ export default function CityWorld() {
     const dimFactor = 1;
 
     if (worldRef.current) {
-      // Continuous scroll — no modulo snap (that caused a one-frame foreground pop at segment seams)
-      worldRef.current.position.z = -travel;
+      worldRef.current.position.z = -travel + loopOffset;
       worldRef.current.position.x = Math.sin(p * Math.PI * 1.5) * 0.25;
       worldRef.current.position.y = -6 + cityReveal * 6;
       worldRef.current.scale.setScalar(0.4 + cityReveal * 0.6);
