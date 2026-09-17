@@ -44,6 +44,13 @@ html {
   scroll-behavior: auto;
 }
 
+html.scroll-locked,
+html.scroll-locked body {
+  overflow: hidden !important;
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 body {
   overscroll-behavior: none;
 }

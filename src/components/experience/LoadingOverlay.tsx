@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties } from "react";
 import { useExperienceStore } from "@/stores/experienceStore";
+import { scrollEngine } from "@/lib/scroll/scrollEngine";
 
 function clamp01(v: number) {
   return Math.min(1, Math.max(0, v));
@@ -96,6 +97,44 @@ export default function LoadingOverlay() {
   const skyMergeRef = useRef<HTMLDivElement>(null);
   const hudRef = useRef<HTMLDivElement>(null);
   const playingRef = useRef(false);
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    scrollEngine.setInputLocked(!loaded);
+
+    if (loaded) {
+      html.style.overflow = "";
+      body.style.overflow = "";
+      html.classList.remove("scroll-locked");
+      window.scrollTo({ top: 0, behavior: "auto" });
+      return;
+    }
+
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.classList.add("scroll-locked");
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    const blockWheel = (event: WheelEvent) => event.preventDefault();
+    const blockTouch = (event: TouchEvent) => event.preventDefault();
+    const blockKey = (event: KeyboardEvent) => {
+      const keys = ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
+      if (keys.includes(event.key)) event.preventDefault();
+    };
+    window.addEventListener("wheel", blockWheel, { passive: false });
+    window.addEventListener("touchmove", blockTouch, { passive: false });
+    window.addEventListener("keydown", blockKey);
+
+    return () => {
+      window.removeEventListener("wheel", blockWheel);
+      window.removeEventListener("touchmove", blockTouch);
+      window.removeEventListener("keydown", blockKey);
+      html.style.overflow = "";
+      body.style.overflow = "";
+      html.classList.remove("scroll-locked");
+    };
+  }, [loaded]);
 
   useEffect(() => {
     if (loaded) return;

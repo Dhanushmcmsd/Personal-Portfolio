@@ -12,8 +12,26 @@ class ScrollEngine {
   private rafId = 0;
   private lastTarget = 0;
   private initialized = false;
+  private inputLocked = true;
 
   private lastTouchY = 0;
+
+  setInputLocked(locked: boolean) {
+    this.inputLocked = locked;
+    if (typeof document === "undefined") return;
+    document.documentElement.classList.toggle("scroll-locked", locked);
+    if (locked) {
+      this.snapToStart();
+    }
+  }
+
+  private snapToStart() {
+    if (typeof window === "undefined") return;
+    window.scrollTo({ top: 0, behavior: "auto" });
+    this.target = 0;
+    this.current = 0;
+    this.progress = 0;
+  }
 
   init() {
     if (this.initialized || typeof window === "undefined") return;
@@ -24,6 +42,10 @@ class ScrollEngine {
     window.addEventListener("wheel", this.onWheel, { passive: false });
     window.addEventListener("touchstart", this.onTouchStart, { passive: true });
     window.addEventListener("touchmove", this.onTouchMove, { passive: false });
+    window.addEventListener("keydown", this.onKeyDown);
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("scroll-locked", this.inputLocked);
+    }
     this.onScroll();
     this.rafId = requestAnimationFrame(this.tick);
   }
@@ -35,6 +57,7 @@ class ScrollEngine {
     window.removeEventListener("wheel", this.onWheel);
     window.removeEventListener("touchstart", this.onTouchStart);
     window.removeEventListener("touchmove", this.onTouchMove);
+    window.removeEventListener("keydown", this.onKeyDown);
     cancelAnimationFrame(this.rafId);
     this.initialized = false;
   }
@@ -45,6 +68,7 @@ class ScrollEngine {
   }
 
   seek(progress: number) {
+    if (this.inputLocked) return;
     const max = this.getMaxScroll();
     const clamped = Math.max(0, Math.min(SCROLL_LOCK_PROGRESS, progress));
     window.scrollTo({
@@ -66,6 +90,10 @@ class ScrollEngine {
   }
 
   private onScroll = () => {
+    if (this.inputLocked) {
+      this.snapToStart();
+      return;
+    }
     const max = this.getMaxScroll();
     this.target = Math.max(
       0,
@@ -75,6 +103,11 @@ class ScrollEngine {
   };
 
   private onWheel = (e: WheelEvent) => {
+    if (this.inputLocked) {
+      e.preventDefault();
+      this.snapToStart();
+      return;
+    }
     const max = this.getMaxScroll();
     const atBottom = window.scrollY >= max - 2;
     if (atBottom && e.deltaY > 0) {
@@ -83,11 +116,25 @@ class ScrollEngine {
     }
   };
 
+  private onKeyDown = (e: KeyboardEvent) => {
+    if (!this.inputLocked) return;
+    const keys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", " ", "Spacebar"];
+    if (keys.includes(e.key)) {
+      e.preventDefault();
+      this.snapToStart();
+    }
+  };
+
   private onTouchStart = (e: TouchEvent) => {
     this.lastTouchY = e.touches[0]?.clientY ?? 0;
   };
 
   private onTouchMove = (e: TouchEvent) => {
+    if (this.inputLocked) {
+      e.preventDefault();
+      this.snapToStart();
+      return;
+    }
     const max = this.getMaxScroll();
     const atBottom = window.scrollY >= max - 2;
     const y = e.touches[0]?.clientY ?? this.lastTouchY;

@@ -1,18 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTurnOnCursorX } from "@/hooks/useTurnOnCursorX";
+import { useCursorFollowSequence } from "@/hooks/useCursorFollowSequence";
 import { scrollEngine } from "@/lib/scroll/scrollEngine";
 import { exclusiveOpacity, SCROLL_LOCK_PROGRESS, SECTION } from "@/lib/scroll/timeline";
 
-const CHARACTER_VIDEO = "/videos/lv_0_20260917033314.mp4?v=2";
-
 export default function CursorFollowCharacter() {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const ghostRef = useRef<HTMLCanvasElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [opacity, setOpacity] = useState(0);
   const active = opacity > 0.04;
-  useTurnOnCursorX(videoRef, ghostRef, active);
+  const { ready } = useCursorFollowSequence(canvasRef, active);
 
   useEffect(() => {
     scrollEngine.init();
@@ -39,27 +36,14 @@ export default function CursorFollowCharacter() {
       aria-hidden="true"
     >
       <canvas
-        ref={ghostRef}
+        ref={canvasRef}
         className="absolute inset-0 h-full w-full"
         style={{
-          objectPosition: "68% 12%",
-          opacity: 0,
-          transform: "scaleX(-1)",
-          filter: "blur(10px) saturate(1.15) brightness(1.25)",
-        }}
-      />
-      <video
-        ref={videoRef}
-        className="absolute inset-0 h-full w-full object-cover object-top"
-        style={{
-          objectPosition: "68% 12%",
           transform: "scaleX(-1)",
           filter: "contrast(1.25) brightness(1.45) saturate(1.25)",
+          opacity: ready ? 1 : 0,
+          visibility: ready ? "visible" : "hidden",
         }}
-        src={CHARACTER_VIDEO}
-        muted
-        playsInline
-        preload="metadata"
       />
     </div>
   );
