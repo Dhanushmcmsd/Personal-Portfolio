@@ -27,7 +27,7 @@ export default function CursorFollowCharacter() {
 
   return (
     <div
-      className="pointer-events-none fixed top-0 left-0 z-[11] hidden h-full w-[42%] lg:block lg:w-[45%]"
+      className="pointer-events-none fixed top-0 left-0 z-[9] hidden h-full w-[42%] lg:block lg:w-[45%]"
       style={{
         opacity,
         visibility: active ? "visible" : "hidden",

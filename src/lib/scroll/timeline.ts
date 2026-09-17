@@ -1,7 +1,11 @@
 import * as THREE from "three";
 
+/** Tune About section length without touching earlier timeline anchors */
+const ABOUT_EXTRA_SCROLL_VH = 260;
+const ABOUT_EXTRA_PROGRESS = ABOUT_EXTRA_SCROLL_VH / 1150;
+
 /** Extra scroll span so later sections keep duration after hero→work stretch */
-export const SCROLL_LOCK_PROGRESS = 1.17;
+export const SCROLL_LOCK_PROGRESS = 1.17 + ABOUT_EXTRA_PROGRESS;
 
 export const SCROLL_HEIGHT_VH = Math.round(1150 * SCROLL_LOCK_PROGRESS);
 
@@ -15,7 +19,7 @@ export const TIMELINE = {
   python: 0.63,
   experience: 0.75,
   about: 0.89,
-  contact: 0.98,
+  contact: 0.98 + ABOUT_EXTRA_PROGRESS,
   end: SCROLL_LOCK_PROGRESS,
 } as const;
 
@@ -26,8 +30,8 @@ export const SECTION = {
   finance: [0.49, 0.61] as const,
   python: [0.61, 0.73] as const,
   experience: [0.73, 0.85] as const,
-  about: [0.89, 0.99] as const,
-  contact: [0.98, SCROLL_LOCK_PROGRESS] as const,
+  about: [0.89, 0.99 + ABOUT_EXTRA_PROGRESS] as const,
+  contact: [0.98 + ABOUT_EXTRA_PROGRESS, SCROLL_LOCK_PROGRESS] as const,
 };
 
 export const NAV_TARGETS: Record<string, number> = {
@@ -56,8 +60,8 @@ export const CAMERA_KEYFRAMES: CameraKeyframe[] = [
   { t: 0.69, position: new THREE.Vector3(-0.5, 0.46, -52), lookAt: new THREE.Vector3(0.15, 0.06, -62), fov: 36 },
   { t: 0.75, position: new THREE.Vector3(0, 0.75, -62), lookAt: new THREE.Vector3(0, 0.15, -72), fov: 38 },
   { t: 0.89, position: new THREE.Vector3(0.2, 0.55, -72), lookAt: new THREE.Vector3(-0.1, 0.1, -82), fov: 36 },
-  { t: 0.99, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
-  { t: 1.095, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
+  { t: 0.99 + ABOUT_EXTRA_PROGRESS, position: new THREE.Vector3(0.1, 0.45, -78), lookAt: new THREE.Vector3(0, 0.05, -86), fov: 34 },
+  { t: 1.095 + ABOUT_EXTRA_PROGRESS, position: new THREE.Vector3(0, 0.35, -82), lookAt: new THREE.Vector3(0, 0, -90), fov: 32 },
   { t: SCROLL_LOCK_PROGRESS, position: new THREE.Vector3(0, 0.28, -84), lookAt: new THREE.Vector3(0, -0.05, -92), fov: 30 },
 ];
 
