@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { PORTFOLIO_CONFIG } from "@/config/portfolio";
 import { useExperienceStore } from "@/stores/experienceStore";
@@ -303,7 +304,13 @@ export default function OverlayUI() {
             style={{ "--photo-reveal": 0, "--photo-glitch": 0 } as CSSProperties}
           >
             <div className="about-photo-frame">
-              <img src={person.photo} alt={person.displayName} />
+              <Image
+                src={person.photo}
+                alt={person.displayName}
+                fill
+                sizes="320px"
+                className="about-photo-image"
+              />
             </div>
           </div>
         </div>

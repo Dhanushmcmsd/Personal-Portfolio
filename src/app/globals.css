@@ -598,7 +598,13 @@ canvas {
   filter: contrast(calc(1 + var(--photo-glitch) * 0.12));
 }
 
-.about-photo-frame img {
+.about-photo-frame > span {
+  position: absolute !important;
+  inset: 0;
+}
+
+.about-photo-frame img,
+.about-photo-frame .about-photo-image {
   width: 100%;
   height: 100%;
   object-fit: cover;

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CURSOR_DISPLAY_WIDTH,
@@ -163,12 +164,16 @@ export default function CustomCursor() {
         style={{ transform: "translate3d(-100px, -100px, 0)" }}
         aria-hidden="true"
       >
-        <img
+        <Image
           src={CURSORS[phase]}
           alt=""
           draggable={false}
           width={CURSOR_DISPLAY_WIDTH}
+          height={CURSOR_DISPLAY_WIDTH}
+          unoptimized
           style={{
+            width: CURSOR_DISPLAY_WIDTH,
+            height: "auto",
             transform: hotspots
               ? `translate(${-offset.x}px, ${-offset.y}px)`
               : undefined,
