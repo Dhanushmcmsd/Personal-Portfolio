@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Archivo_Black, DM_Sans, Plus_Jakarta_Sans, Saira_Stencil_One, Teko } from "next/font/google";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const archivo = Archivo_Black({
@@ -39,6 +40,7 @@ const kola = Saira_Stencil_One({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Dhanush Raghav M — Full-Stack AI Engineer",
   description:
     "Immersive 3D portfolio of Dhanush Raghav M — Full-Stack AI Software Engineer building web, mobile, and ML products end-to-end.",
